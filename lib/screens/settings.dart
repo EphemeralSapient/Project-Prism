@@ -96,8 +96,9 @@ class _settingsState extends State<settings> {
                 debugPrint("Current version is newer | Web result : $contents");
               } else {
                 debugPrint("Fetched version is newer | Web result : $contents");
-                updateIsAvail = true;
-                setState(() {});
+                setState(() {
+                  updateIsAvail = true;
+                });
               }
             });
           } else {
