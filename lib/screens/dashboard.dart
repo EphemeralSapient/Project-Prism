@@ -13,6 +13,7 @@ import 'package:Project_Prism/ui/course/create.dart';
 import 'package:Project_Prism/ui/course/info.dart';
 import 'package:Project_Prism/ui/course/remove.dart';
 import 'package:Project_Prism/ui/course/update.dart';
+import 'package:Project_Prism/ui/face_detection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
@@ -322,7 +323,10 @@ List<List<Object>> names = [
       [
         Icons.face,
         "Face Detection",
-        () {},
+        () {
+          Navigator.pop(global.rootCTX!);
+          global.switchToSecondaryUi(const FaceDetection());
+        },
         [-1]
       ],
       [
