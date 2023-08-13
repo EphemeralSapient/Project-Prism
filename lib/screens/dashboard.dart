@@ -325,6 +325,7 @@ List<List<Object>> names = [
         "Face Detection",
         () {
           Navigator.pop(global.rootCTX!);
+          global.cameraShotFn = null;
           global.switchToSecondaryUi(const FaceDetection());
         },
         [-1]

@@ -1,10 +1,131 @@
 import 'dart:io';
-import 'dart:math';
+import 'dart:ui';
 
+import 'package:Project_Prism/global.dart' as global;
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
+import 'package:image/image.dart' as imglib;
+
+Future<void> uploadImages(List<Object> images) async {
+  String url = "https://id.sempit.repl.co/upload";
+  List<http.MultipartFile> imageFiles = [];
+
+  for (dynamic image in images) {
+    Uint8List compressedData = await compressImage(image[0]);
+    imageFiles.add(
+      http.MultipartFile.fromBytes(
+        'file',
+        compressedData,
+        filename: 'image_${images.indexOf(image)}.jpeg',
+      ),
+    );
+  }
+
+  try {
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+    request.files.addAll(imageFiles);
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      // Successful response handling
+      debugPrint('Images uploaded successfully');
+      final responseString = await response.stream.bytesToString();
+      global.alert.customAlertNoActionWithoutPopScope(global.rootCTX!,
+          global.textWidgetWithHeavyFont(responseString), null, () {}, () {});
+    } else {
+      // Handle error
+      debugPrint('Image upload failed');
+    }
+  } catch (e) {
+    // Handle network error
+    debugPrint('Network error: $e');
+  }
+}
+
+Future<Uint8List> compressImage(Uint8List image) async {
+  // var result = await FlutterImageCompress.compressWithList(
+  //   image,
+  //   quality: 70, // Adjust quality as needed
+  // );
+  //return Uint8List.fromList(result);
+  return image;
+}
+
+Uint8List convertNV21ToJpeg(Uint8List nv21Data, int width, int height) {
+  imglib.Image yuvImage = imglib.Image.fromBytes(
+      width: width, height: height, bytes: nv21Data.buffer);
+  final jpegData = imglib.encodeJpg(yuvImage);
+
+  return jpegData;
+}
+
+Uint8List rotateImage(Uint8List imageData, int width, int height) {
+  imglib.Image imgData = imglib.decodeImage(imageData)!;
+  imglib.Image rotatedImg =
+      imglib.copyRotate(imgData, angle: -90); // Rotate 90 degrees clockwise
+  return Uint8List.fromList(imglib.encodeJpg(rotatedImg));
+}
+
+imglib.Image decodeYUV420SP(InputImage image) {
+  final width = image.metadata!.size.width.toInt();
+  final height = image.metadata!.size.height.toInt();
+
+  Uint8List yuv420sp = image.bytes!;
+  //int total = width * height;
+  //Uint8List rgb = Uint8List(total);
+  final outImg =
+      imglib.Image(width: width, height: height); // default numChannels is 3
+
+  final int frameSize = width * height;
+
+  for (int j = 0, yp = 0; j < height; j++) {
+    int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+    for (int i = 0; i < width; i++, yp++) {
+      int y = (0xff & yuv420sp[yp]) - 16;
+      if (y < 0) y = 0;
+      if ((i & 1) == 0) {
+        v = (0xff & yuv420sp[uvp++]) - 128;
+        u = (0xff & yuv420sp[uvp++]) - 128;
+      }
+      int y1192 = 1192 * y;
+      int r = (y1192 + 1634 * v);
+      int g = (y1192 - 833 * v - 400 * u);
+      int b = (y1192 + 2066 * u);
+
+      if (r < 0) {
+        r = 0;
+      } else if (r > 262143) {
+        r = 262143;
+      }
+      if (g < 0) {
+        g = 0;
+      } else if (g > 262143) {
+        g = 262143;
+      }
+      if (b < 0) {
+        b = 0;
+      } else if (b > 262143) {
+        b = 262143;
+      }
+
+      outImg.setPixelRgb(i, j, ((r << 6) & 0xff0000) >> 16,
+          ((g >> 2) & 0xff00) >> 8, (b >> 10) & 0xff);
+      /*rgb[yp] = 0xff000000 |
+            ((r << 6) & 0xff0000) |
+            ((g >> 2) & 0xff00) |
+            ((b >> 10) & 0xff);*/
+    }
+  }
+  return outImg;
+}
+
+List<Face> faces = [];
+InputImage? _inputImage;
 
 class FaceDetection extends StatefulWidget {
   const FaceDetection({super.key});
@@ -16,9 +137,7 @@ class FaceDetection extends StatefulWidget {
 class _FaceDetectionState extends State<FaceDetection> {
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      enableContours: true,
-      enableLandmarks: true,
-    ),
+        enableTracking: true, performanceMode: FaceDetectorMode.accurate),
   );
   bool _canProcess = true;
   bool _isBusy = false;
@@ -52,7 +171,8 @@ class _FaceDetectionState extends State<FaceDetection> {
     setState(() {
       _text = '';
     });
-    final faces = await _faceDetector.processImage(inputImage);
+    _inputImage = inputImage;
+    faces = await _faceDetector.processImage(inputImage);
     if (inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null) {
       final painter = FaceDetectorPainter(
@@ -68,7 +188,6 @@ class _FaceDetectionState extends State<FaceDetection> {
         text += 'face: ${face.boundingBox}\n\n';
       }
       _text = text;
-      // TODO: set _customPaint to draw boundingRect on top of image
       _customPaint = null;
     }
     _isBusy = false;
@@ -137,33 +256,6 @@ class FaceDetectorPainter extends CustomPainter {
         paint1,
       );
 
-      void paintContour(FaceContourType type) {
-        final contour = face.contours[type];
-        if (contour?.points != null) {
-          for (final Point point in contour!.points) {
-            canvas.drawCircle(
-                Offset(
-                  translateX(
-                    point.x.toDouble(),
-                    size,
-                    imageSize,
-                    rotation,
-                    cameraLensDirection,
-                  ),
-                  translateY(
-                    point.y.toDouble(),
-                    size,
-                    imageSize,
-                    rotation,
-                    cameraLensDirection,
-                  ),
-                ),
-                1,
-                paint1);
-          }
-        }
-      }
-
       void paintLandmark(FaceLandmarkType type) {
         final landmark = face.landmarks[type];
         if (landmark?.position != null) {
@@ -187,10 +279,6 @@ class FaceDetectorPainter extends CustomPainter {
               2,
               paint2);
         }
-      }
-
-      for (final type in FaceContourType.values) {
-        paintContour(type);
       }
 
       for (final type in FaceLandmarkType.values) {
@@ -236,11 +324,8 @@ class DetectorView extends StatefulWidget {
 }
 
 class _DetectorViewState extends State<DetectorView> {
-  late DetectorViewMode _mode;
-
   @override
   void initState() {
-    _mode = widget.initialDetectionMode;
     super.initState();
   }
 
@@ -257,15 +342,72 @@ class _DetectorViewState extends State<DetectorView> {
   }
 
   void _onDetectorViewModeChanged() {
-    if (_mode == DetectorViewMode.liveFeed) {
-      _mode = DetectorViewMode.gallery;
+    // inputImage contains the entire photo
+    if (faces.isEmpty || _inputImage == null) {
+      global.snackbarText("No faces detected.");
     } else {
-      _mode = DetectorViewMode.liveFeed;
+      // Load the input image
+      double w = _inputImage!.metadata!.size.width;
+      double h = _inputImage!.metadata!.size.height;
+      var decoded = decodeYUV420SP(_inputImage!);
+      var src = rotateImage(
+        convertNV21ToJpeg(decoded.buffer.asUint8List(), w.toInt(), h.toInt()),
+        h.toInt(),
+        w.toInt(),
+      );
+      var lImage = imglib.decodeJpg(src);
+      Uint8List combinedImageBytes;
+      List<List<Object>> croppedFaces = [];
+      // // Create a canvas to combine cropped faces
+      for (var face in faces) {
+        // Extract bounding box coordinates
+        int left = face.boundingBox.left.toInt();
+        int top = face.boundingBox.top.toInt();
+        int width = face.boundingBox.width.toInt();
+        int height = face.boundingBox.height.toInt();
+
+        // Crop the input image using copyCrop from image package
+        var croppedFace = imglib.copyCrop(lImage as imglib.Image,
+            x: left, y: top, width: width, height: height);
+        combinedImageBytes = imglib.encodeJpg(croppedFace);
+        croppedFaces.add([
+          combinedImageBytes,
+          h,
+          w,
+        ]);
+      }
+
+      if (global.cameraShotFn == null) {
+        uploadImages(croppedFaces);
+        global.alert.customAlertNoActionWithoutPopScope(
+            context,
+            SingleChildScrollView(
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (List<Object> x in croppedFaces)
+                  Image.memory(
+                    x[0] as Uint8List,
+                    height: x[1] as double,
+                    width: x[2] as double,
+                  )
+              ],
+            )),
+            global.textWidgetWithHeavyFont(
+                "${croppedFaces.length} faces detected"),
+            () {},
+            () {});
+      } else {
+        global.cameraShotFn!(croppedFaces);
+      }
+
+      // Combine the cropped face onto the combinedImage canvas
+      // Update the UI if needed
+      //   setState(() {});
+      // }
+
+      // Convert the combinedImage to bytes
     }
-    if (widget.onDetectorViewModeChanged != null) {
-      widget.onDetectorViewModeChanged!(_mode);
-    }
-    setState(() {});
   }
 }
 
@@ -333,7 +475,36 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.transparent, body: _liveFeedBody());
+    return Scaffold(
+      appBar: AppBar(
+        title: global.textWidgetWithHeavyFont("Face detection"),
+        backgroundColor: Colors.transparent, // Make the AppBar transparent
+        elevation: 0, // Remove the shadow under the AppBar
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).textSelectionTheme.selectionHandleColor,
+          ),
+        ),
+      ),
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Apply the glassy effect with blur
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+                // color:
+                //     Colors.black.withOpacity(0.3), // Adjust the opacity as needed
+                ),
+          ),
+          _liveFeedBody(),
+        ],
+      ),
+    );
   }
 
   Widget _liveFeedBody() {
@@ -341,7 +512,6 @@ class _CameraViewState extends State<CameraView> {
     if (_controller == null) return Container();
     if (_controller?.value.isInitialized == false) return Container();
     return Container(
-      color: Colors.transparent,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
@@ -366,18 +536,19 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Widget _detectionViewModeToggle() => Positioned(
-        bottom: 8,
-        left: 8,
+        bottom: 16,
+        left: 16,
         child: SizedBox(
           height: 50.0,
           width: 50.0,
           child: FloatingActionButton(
             heroTag: Object(),
             onPressed: widget.onDetectorViewModeChanged,
-            backgroundColor: Colors.black54,
-            child: const Icon(
-              Icons.photo_library_outlined,
+            backgroundColor: Colors.blue,
+            child: Icon(
+              Icons.camera,
               size: 25,
+              color: Theme.of(context).textSelectionTheme.selectionHandleColor,
             ),
           ),
         ),
@@ -389,9 +560,10 @@ class _CameraViewState extends State<CameraView> {
           heroTag: 'switchLiveCameraToggle',
           onPressed: _switchLiveCamera,
           backgroundColor: Colors.blue,
-          child: const Icon(
+          child: Icon(
             Icons.flip_camera_android,
             size: 30,
+            color: Theme.of(context).textSelectionTheme.selectionHandleColor,
           ),
         ),
       );
@@ -405,9 +577,10 @@ class _CameraViewState extends State<CameraView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.zoom_out,
-                  color: Colors.white,
+                  color:
+                      Theme.of(context).textSelectionTheme.selectionHandleColor,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -491,7 +664,6 @@ class _CameraViewState extends State<CameraView> {
     final camera = _cameras[_cameraIndex];
     _controller = CameraController(
       camera,
-      // Set to ResolutionPreset.high. Do NOT set it to ResolutionPreset.max because for some phones does NOT work.
       ResolutionPreset.high,
       enableAudio: false,
       imageFormatGroup: Platform.isAndroid
@@ -544,7 +716,7 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _processCameraImage(CameraImage image) {
-    final inputImage = _inputImageFromCameraImage(image);
+    var inputImage = _inputImageFromCameraImage(image);
     if (inputImage == null) return;
     widget.onImage(inputImage);
   }
@@ -579,7 +751,6 @@ class _CameraViewState extends State<CameraView> {
       rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
     }
     if (rotation == null) return null;
-
     // get image format
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
     if (format == null ||
@@ -589,7 +760,6 @@ class _CameraViewState extends State<CameraView> {
     // since format is constraint to nv21 or bgra8888, both only have one plane
     if (image.planes.length != 1) return null;
     final plane = image.planes.first;
-
     // compose InputImage using bytes
     return InputImage.fromBytes(
       bytes: plane.bytes,

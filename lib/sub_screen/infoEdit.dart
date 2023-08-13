@@ -1,21 +1,23 @@
+import 'package:Project_Prism/database.dart';
+import 'package:Project_Prism/global.dart' as global;
 import 'package:Project_Prism/modules/errors.dart';
+import 'package:Project_Prism/ui/toggleButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:Project_Prism/database.dart';
-import 'package:Project_Prism/global.dart' as global;
-import 'package:Project_Prism/ui/toggleButton.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 void promptStaffInfoEdit() {
-  global.switchToSecondaryUi(staffs_info());
+  global.switchToSecondaryUi(const staffs_info());
   global.temp = () {
     global.switchToPrimaryUi();
   };
 }
 
 class staffs_info extends StatefulWidget {
+  const staffs_info({super.key});
+
   @override
   State<staffs_info> createState() => _staffs_infoState();
 }
@@ -202,10 +204,11 @@ class _staffs_infoState extends State<staffs_info> {
               },
               backgroundColor:
                   Theme.of(context).textSelectionTheme.selectionHandleColor,
-              child: Icon(Icons.done, color: Theme.of(context).backgroundColor),
+              child: Icon(Icons.done,
+                  color: Theme.of(context).colorScheme.background),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            backgroundColor: Theme.of(context).backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.background,
             appBar: AppBar(
               title: global.textWidgetWithHeavyFont("Staff Information Form"),
               centerTitle: true,
@@ -361,7 +364,7 @@ class _staffs_infoState extends State<staffs_info> {
                           for (String val
                               in infoData["departments"] + ["Department"])
                             DropdownMenuItem(
-                                child: global.textWidget(val), value: val)
+                                value: val, child: global.textWidget(val))
                         ],
                         onChanged: (String? e) {
                           departmentStaff = e ?? "Department";
@@ -450,7 +453,8 @@ class _staffs_infoState extends State<staffs_info> {
                                 selected: choices[x.value[0]] ?? false,
                                 onSelected: (value) =>
                                     setState(() => choices[x.value[0]] = value),
-                                shadowColor: Theme.of(context).backgroundColor,
+                                shadowColor:
+                                    Theme.of(context).colorScheme.background,
                                 //disabledColor: Colors.blue,
                                 selectedColor: Colors.blue,
                                 backgroundColor: Theme.of(context).focusColor,
@@ -472,13 +476,15 @@ class _staffs_infoState extends State<staffs_info> {
 }
 
 void promptStudentsInfoEdit() {
-  global.switchToSecondaryUi(students_info());
+  global.switchToSecondaryUi(const students_info());
   global.temp = () {
     global.switchToPrimaryUi();
   };
 }
 
 class students_info extends StatefulWidget {
+  const students_info({super.key});
+
   @override
   State<students_info> createState() => _stuents_infoState();
 }
@@ -610,7 +616,7 @@ class _stuents_infoState extends State<students_info> {
                     String checkPath =
                         "/department/${acc.parentDepartment}/subdepartments/${acc.branchCode}/year_section/${acc.year?.toUpperCase()}_${acc.section?.toUpperCase()}/students";
                     var exists = true;
-                    var fetch;
+                    Object fetch;
                     final db = FirebaseFirestore.instance;
 
                     try {
@@ -659,6 +665,7 @@ class _stuents_infoState extends State<students_info> {
                     newAccObj.isStudent = true;
                     newAccObj.year = year;
                     newAccObj.section = section;
+                    newAccObj.email = global.account?.email;
 
                     global.accObj = newAccObj;
                     global.Database!.update(
@@ -688,10 +695,11 @@ class _stuents_infoState extends State<students_info> {
               },
               backgroundColor:
                   Theme.of(context).textSelectionTheme.selectionHandleColor,
-              child: Icon(Icons.done, color: Theme.of(context).backgroundColor),
+              child: Icon(Icons.done,
+                  color: Theme.of(context).colorScheme.background),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            backgroundColor: Theme.of(context).backgroundColor,
+            backgroundColor: Theme.of(context).colorScheme.background,
             appBar: AppBar(
               title: global.textWidgetWithHeavyFont("Student Information Form"),
               centerTitle: true,
@@ -862,7 +870,7 @@ class _stuents_infoState extends State<students_info> {
                                     setState(() => year = val.toString());
                                   }),
                             ),
-                            SizedBox(width: 20),
+                            const SizedBox(width: 20),
                             Expanded(
                               child: DropdownButton(
                                   hint: global.textWidget("Select the section"),
@@ -910,7 +918,7 @@ class _stuents_infoState extends State<students_info> {
                                 },
                                 text: "College Bus?",
                                 icon: Icons.bus_alert_rounded,
-                                color: Theme.of(context).backgroundColor,
+                                color: Theme.of(context).colorScheme.background,
                                 activeString: "Yes",
                                 inactiveString: "No",
                               )),
@@ -941,7 +949,7 @@ class _stuents_infoState extends State<students_info> {
                         },
                         text: "Hosteller?",
                         icon: Icons.local_hotel,
-                        color: Theme.of(context).backgroundColor,
+                        color: Theme.of(context).colorScheme.background,
                         activeString: "Yes",
                         inactiveString: "No",
                       ),

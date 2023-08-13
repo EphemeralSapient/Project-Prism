@@ -2,6 +2,7 @@ import 'package:Project_Prism/global.dart' as global;
 import 'package:Project_Prism/sub_screen/profileInfo.dart';
 import 'package:Project_Prism/ui/dragUi.dart';
 import 'package:Project_Prism/ui/searchButton.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -25,16 +26,16 @@ bool started = false;
 
 class _searchState extends State<search> {
   Future<int> refresh() async {
-    debugPrint("refreshing...");
+    debugPrint("refreshing the search list database info...");
     var entries = await global.Database!.firestore.collection("/acc").get();
     Map<String, dynamic> entryOfAcc = {};
-    for (var i in entries.docs) {
+    for (QueryDocumentSnapshot<Map<String, dynamic>> i in entries.docs) {
       var data = i.data();
       entryOfAcc[data["email"].toString()] = data;
     }
     global.accountsInDatabase = entryOfAcc;
     acc = [];
-    for (var x in entryOfAcc.entries) {
+    for (var x in global.accountsInDatabase.entries) {
       if (x.value["phoneNo"] != null) {
         if (x.value["isStudent"] == true) {
           acc.add({
@@ -101,6 +102,7 @@ class _searchState extends State<search> {
         rtl: true,
         textController: textController,
         onSuffixTap: () {
+          refresh();
           textController.clear();
         },
         color: Theme.of(context).focusColor,

@@ -67,6 +67,8 @@ dependencies:
   flutter_html: ^3.0.0-beta.2
   camera: ^0.10.5+3
   google_mlkit_face_detection: ^0.8.0
+  http: ^1.1.0
+  flutter_image_compress: ^2.0.4
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:Project_Prism/global.dart' as global;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 // Using https://www.researchgate.net/profile/Shefalika-Samaddar/publication/238090125/figure/fig1/AS:298754591739909@1448240053400/Organizational-Structure-of-a-Typical-Technical-Institute.png
 // For generic permission level for Account level 1 [admin].
@@ -72,7 +72,7 @@ class account_obj {
   // Both
   Map<String, dynamic> hashes =
       global.hashes; // Despite using "dynamic", it is "String"
-
+  String? facePhoto;
   int? notificationCount = 0;
 
   account_obj fromJSON(Map<String, Object?> Data) {
@@ -117,6 +117,7 @@ class account_obj {
     newObj.positionEncoded = Data["positionEncoded"] as String?;
 
     newObj.title = Data["title"] as String?;
+    newObj.facePhoto = Data["facePhoto"] as String?;
     newObj.email = Data["email"] as String?;
 
     return newObj;
@@ -166,6 +167,7 @@ class account_obj {
       "section": section,
 
       "title": title,
+      "facePhoto": facePhoto,
       "email": email
     };
   }
@@ -183,8 +185,9 @@ class db {
   }
 
   CollectionReference<Object?> addCollection(String name, String path) {
-    if (global.collectionMap.containsKey(name) == true)
+    if (global.collectionMap.containsKey(name) == true) {
       return global.collectionMap[name]!; // Returns if exists already
+    }
     global.collectionMap[name] =
         firestore.collection(path); // Adding the collection
     return global.collectionMap[name]!;

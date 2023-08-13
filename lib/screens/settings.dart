@@ -47,7 +47,7 @@ int compareVersions(List<int> version1, List<int> version2) {
   return 0; // versions are equal
 }
 
-const currVersion = "0.0.0";
+String currVersion = "0.0.0";
 
 class settings extends StatefulWidget {
   static const darkMode = 'dark';
@@ -67,49 +67,54 @@ class _settingsState extends State<settings> {
     String content = await rootBundle.loadString('asset/version.txt');
     setState(() {
       fileContent = content;
+      currVersion = content;
     });
+    updateCheck();
+  }
+
+  void updateCheck() async {
+    if (global.networkAvailable) {
+      HttpClient()
+          .getUrl(Uri.parse(url))
+          .then((HttpClientRequest request) => request.close())
+          .then((HttpClientResponse response) {
+        if (response.statusCode == HttpStatus.ok) {
+          response.transform(const Utf8Decoder()).listen((contents) {
+            List<int> currComponents = versionToComponents(currVersion);
+            List<int> fetchedComponents = versionToComponents(contents);
+
+            int comparisonResult =
+                compareVersions(currComponents, fetchedComponents);
+
+            if (comparisonResult == 0) {
+              debugPrint("Versions are equal, no update required.");
+            } else if (comparisonResult > 0) {
+              debugPrint("Current version is newer | Web result : $contents");
+            } else {
+              debugPrint("Fetched version is newer | Web result : $contents");
+              setState(() {
+                updateIsAvail = true;
+              });
+            }
+          });
+        } else {
+          debugPrint(
+              'Request failed for update info with status: ${response.statusCode}');
+        }
+      }).catchError((error) {
+        debugPrint('Error with loading status HTTP client: $error');
+      });
+    }
   }
 
   @override
   void initState() {
     if (currVersion == "0.0.0") {
       _loadTextAsset();
+    } else {
+      updateCheck();
     }
     super.initState();
-    Future.delayed(Duration.zero, () async {
-      if (global.networkAvailable) {
-        HttpClient()
-            .getUrl(Uri.parse(url))
-            .then((HttpClientRequest request) => request.close())
-            .then((HttpClientResponse response) {
-          if (response.statusCode == HttpStatus.ok) {
-            response.transform(const Utf8Decoder()).listen((contents) {
-              List<int> currComponents = versionToComponents(currVersion);
-              List<int> fetchedComponents = versionToComponents(contents);
-
-              int comparisonResult =
-                  compareVersions(currComponents, fetchedComponents);
-
-              if (comparisonResult == 0) {
-                debugPrint("Versions are equal, no update required.");
-              } else if (comparisonResult > 0) {
-                debugPrint("Current version is newer | Web result : $contents");
-              } else {
-                debugPrint("Fetched version is newer | Web result : $contents");
-                setState(() {
-                  updateIsAvail = true;
-                });
-              }
-            });
-          } else {
-            debugPrint(
-                'Request failed for update info with status: ${response.statusCode}');
-          }
-        }).catchError((error) {
-          debugPrint('Error with loading status HTTP client: $error');
-        });
-      }
-    });
   }
 
   @override

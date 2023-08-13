@@ -154,11 +154,17 @@ class _dashboardState extends State<dashboard> {
             .get(global.collectionMap["acc"]!, global.account!.email!);
 
         if (fetch.status == db_fetch_status.exists) {
-          setState(() {
+          if (context.mounted) {
+            setState(() {
+              global.accObj =
+                  account_obj().fromJSON(fetch.data as Map<String, dynamic>);
+              isTrulyNull = true;
+            });
+          } else {
             global.accObj =
                 account_obj().fromJSON(fetch.data as Map<String, dynamic>);
             isTrulyNull = true;
-          });
+          }
         } else {
           debugPrint(
               "[WARNING] ACCOUNT INFO NOT SYNCED DUE TO ERROR [!]\n${fetch.data.toString()}");
@@ -309,7 +315,7 @@ void prompt(BuildContext context) async {
     };
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (ctx) => staffs_info()),
+      MaterialPageRoute(builder: (ctx) => const staffs_info()),
     );
   } else {
     // student
@@ -318,7 +324,7 @@ void prompt(BuildContext context) async {
     };
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (ctx) => students_info()),
+      MaterialPageRoute(builder: (ctx) => const students_info()),
     );
   }
 }

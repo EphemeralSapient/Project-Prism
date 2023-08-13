@@ -3,7 +3,10 @@
 library globals;
 
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:Project_Prism/database.dart';
+import 'package:Project_Prism/ui/alert.dart';
 import 'package:another_transformer_page_view/another_transformer_page_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User;
@@ -13,9 +16,6 @@ import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
-import 'package:Project_Prism/database.dart';
-import 'dart:io';
-import 'package:Project_Prism/ui/alert.dart';
 
 SharedPreferences? prefs;
 ThemeMode darkMode = ThemeMode.system;
@@ -112,6 +112,7 @@ int customColor = Colors.lightBlue.value;
 void Function()? loginRouteCloseFn;
 void Function()? rootRefresh;
 void Function()? bgRefresh;
+void Function(dynamic)? cameraShotFn;
 Alert alert = Alert();
 BuildContext? loginRouteCTX;
 BuildContext? loginScreenRouteCTX;
@@ -209,7 +210,7 @@ Widget padHeight([double p = 5]) {
 }
 
 dynamic nullIfNullElseString(dynamic n) {
-  return n != null ? n.toString() : null;
+  return n?.toString();
 }
 
 Widget textField(String labelName,
@@ -345,6 +346,8 @@ Widget textWidgetWithTransparency(String text, double trans) {
 }
 
 class uiSecondaryWidget extends StatelessWidget {
+  const uiSecondaryWidget({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
