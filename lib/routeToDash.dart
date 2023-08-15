@@ -58,7 +58,7 @@ class _uiState extends State<ui> {
   @override
   Widget build(BuildContext context) {
     var page_1 = ClipRect(child: cacheDashboard);
-    var page_2 = ClipRect(child: global.uiSecondaryWidget());
+    var page_2 = const ClipRect(child: global.uiSecondaryWidget());
     return DoubleBackToExitWidget(
       page: _page,
       child: Scaffold(
@@ -225,7 +225,7 @@ class _dashboardState extends State<dashboard> {
                   if (global.accountType != 3) const classroom(),
                   const search(),
                   const settings(),
-                  if (global.accountType != 3) profile(),
+                  if (global.accountType != 3) const profile(),
                 ],
               )),
               backgroundColor: Colors.transparent,
@@ -391,7 +391,7 @@ class _DoubleBackToExitWidgetState extends State<DoubleBackToExitWidget> {
 
   Future<bool> _handleWillPop() async {
     dynamic page = widget.page;
-    if (page.index == 1) {
+    if (page.index != 0) {
       page.move(
           0); // (0, duration: Duration(seconds: 1), curve: Curves.easeInOutExpo);
       return false;

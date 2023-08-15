@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
@@ -9,6 +10,8 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as imglib;
+
+bool _backCam = false;
 
 Future<void> uploadImages(List<Object> images) async {
   String url = "https://id.sempit.repl.co/upload";
@@ -35,15 +38,76 @@ Future<void> uploadImages(List<Object> images) async {
       // Successful response handling
       debugPrint('Images uploaded successfully');
       final responseString = await response.stream.bytesToString();
-      global.alert.customAlertNoActionWithoutPopScope(global.rootCTX!,
-          global.textWidgetWithHeavyFont(responseString), null, () {}, () {});
+      List<dynamic> emailsDynamic = jsonDecode(responseString);
+      List<dynamic> emails = [];
+      var datalist =
+          (await global.Database!.firestore.collection("/acc/").get()).docs;
+      var dataList = {};
+      for (var x in datalist) {
+        if (x.data().containsKey("email") && x.data()["email"] != null) {
+          dataList[x.data()["email"]] = x.data();
+        }
+      }
+      for (var x in emailsDynamic) {
+        String email = x.toString();
+        if (email != "No face found" && dataList.containsKey(email)) {
+          emails.add(dataList[email]);
+        } else {}
+      }
+
+      if (emails.isNotEmpty) {
+        global.alert.customAlertNoActionWithoutPopScope(
+            global.rootCTX!,
+            SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (var x in emails)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(global.rootCTX!).focusColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {},
+                          child: ListTile(
+                            tileColor: Colors.transparent,
+                            style: ListTileStyle.list,
+                            leading: CircleAvatar(
+                              backgroundColor:
+                                  Theme.of(global.rootCTX!).focusColor,
+                              backgroundImage: NetworkImage(x["avatar"]),
+                            ),
+                            title: global.textWidgetWithHeavyFont(
+                                '${x["firstName"]} ${x['lastName']}'),
+                            subtitle: global.textWidget_ns(
+                              "${x["rollNo"]} ${x["branchCode"]} ${x["year"].toString().toUpperCase()} ${x["section"].toString().toUpperCase()}",
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            null,
+            () {},
+            () {});
+      } else {
+        global.snackbarText("Unknown faces only found");
+      }
     } else {
       // Handle error
-      debugPrint('Image upload failed');
+      global.snackbarText('Image upload failed');
     }
   } catch (e) {
     // Handle network error
-    debugPrint('Network error: $e');
+    debugPrint(
+        "Failed on fetching and getting the face detected info from backend | $e");
+    global.snackbarText('Network error: $e');
   }
 }
 
@@ -59,15 +123,27 @@ Future<Uint8List> compressImage(Uint8List image) async {
 Uint8List convertNV21ToJpeg(Uint8List nv21Data, int width, int height) {
   imglib.Image yuvImage = imglib.Image.fromBytes(
       width: width, height: height, bytes: nv21Data.buffer);
+
   final jpegData = imglib.encodeJpg(yuvImage);
 
   return jpegData;
 }
 
-Uint8List rotateImage(Uint8List imageData, int width, int height) {
+// Uint8List flipImageXAxis(Uint8List imageData, int width, int height) {
+//   imglib.Image imgData = imglib.decodeImage(imageData)!;
+
+//   // Flip the image horizontally
+//   imglib.Image flippedImg =
+//       imglib.flip(imgData, direction: imglib.FlipDirection.horizontal);
+
+//   // Encode the flipped image
+//   return Uint8List.fromList(imglib.encodeJpg(flippedImg));
+// }
+
+Uint8List rotateImage(Uint8List imageData, int width, int height, int rotate) {
   imglib.Image imgData = imglib.decodeImage(imageData)!;
   imglib.Image rotatedImg =
-      imglib.copyRotate(imgData, angle: -90); // Rotate 90 degrees clockwise
+      imglib.copyRotate(imgData, angle: rotate); // Rotate 90 degrees clockwise
   return Uint8List.fromList(imglib.encodeJpg(rotatedImg));
 }
 
@@ -136,8 +212,7 @@ class FaceDetection extends StatefulWidget {
 
 class _FaceDetectionState extends State<FaceDetection> {
   final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(
-        enableTracking: true, performanceMode: FaceDetectorMode.accurate),
+    options: FaceDetectorOptions(performanceMode: FaceDetectorMode.accurate),
   );
   bool _canProcess = true;
   bool _isBusy = false;
@@ -150,6 +225,12 @@ class _FaceDetectionState extends State<FaceDetection> {
     _canProcess = false;
     _faceDetector.close();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    _backCam = false;
+    super.initState();
   }
 
   @override
@@ -351,10 +432,14 @@ class _DetectorViewState extends State<DetectorView> {
       double h = _inputImage!.metadata!.size.height;
       var decoded = decodeYUV420SP(_inputImage!);
       var src = rotateImage(
-        convertNV21ToJpeg(decoded.buffer.asUint8List(), w.toInt(), h.toInt()),
-        h.toInt(),
-        w.toInt(),
-      );
+          convertNV21ToJpeg(decoded.buffer.asUint8List(), w.toInt(), h.toInt()),
+          h.toInt(),
+          w.toInt(),
+          !_backCam ? -90 : 90);
+
+      // if (_backCam == false) {
+      //   src = flipImageXAxis(src, w.toInt(), h.toInt());
+      // }
       var lImage = imglib.decodeJpg(src);
       Uint8List combinedImageBytes;
       List<List<Object>> croppedFaces = [];
@@ -397,6 +482,19 @@ class _DetectorViewState extends State<DetectorView> {
                 "${croppedFaces.length} faces detected"),
             () {},
             () {});
+
+        // global.alert.customAlertNoActionWithoutPopScope(
+        //     context,
+        //     SingleChildScrollView(
+        //         child: Image.memory(
+        //       src,
+        //       height: h,
+        //       width: w,
+        //     )),
+        //     global.textWidgetWithHeavyFont(
+        //         "${croppedFaces.length} faces detected"),
+        //     () {},
+        //     () {});
       } else {
         global.cameraShotFn!(croppedFaces);
       }
@@ -482,7 +580,8 @@ class _CameraViewState extends State<CameraView> {
         elevation: 0, // Remove the shadow under the AppBar
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            global.switchToPrimaryUi();
+            // Navigator.pop(context);
           },
           icon: Icon(
             Icons.arrow_back,
@@ -537,7 +636,7 @@ class _CameraViewState extends State<CameraView> {
 
   Widget _detectionViewModeToggle() => Positioned(
         bottom: 16,
-        left: 16,
+        left: (MediaQuery.of(context).size.width / 2) - 25,
         child: SizedBox(
           height: 50.0,
           width: 50.0,
@@ -709,9 +808,9 @@ class _CameraViewState extends State<CameraView> {
   Future _switchLiveCamera() async {
     setState(() => _changingCameraLens = true);
     _cameraIndex = (_cameraIndex + 1) % _cameras.length;
-
     await _stopLiveFeed();
     await _startLiveFeed();
+    _backCam = !_backCam;
     setState(() => _changingCameraLens = false);
   }
 
@@ -760,6 +859,7 @@ class _CameraViewState extends State<CameraView> {
     // since format is constraint to nv21 or bgra8888, both only have one plane
     if (image.planes.length != 1) return null;
     final plane = image.planes.first;
+    debugPrint(rotation.toString());
     // compose InputImage using bytes
     return InputImage.fromBytes(
       bytes: plane.bytes,

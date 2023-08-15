@@ -5,15 +5,15 @@ import 'package:Project_Prism/ui/searchButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 Widget? cacheOfSecondPage;
 Widget? cacheOfThirdPage;
 
 class hallInfoUi extends StatefulWidget {
+  const hallInfoUi({super.key});
+
   @override
   State<hallInfoUi> createState() => _hallInfoUiState();
 }
@@ -21,7 +21,7 @@ class hallInfoUi extends StatefulWidget {
 PageController pg = PageController();
 
 class _hallInfoUiState extends State<hallInfoUi> {
-  TextEditingController _text = TextEditingController();
+  final TextEditingController _text = TextEditingController();
 
   String _selectedBlock = "All";
 
@@ -53,8 +53,9 @@ class _hallInfoUiState extends State<hallInfoUi> {
     List<Map<String, dynamic>> output = [];
 
     for (DocumentSnapshot<Object?> x in hallData!) {
-      if (x.id.endsWith("_raw") == false)
+      if (x.id.endsWith("_raw") == false) {
         output.add(x.data() as Map<String, dynamic>);
+      }
     }
     return output;
   }
@@ -175,7 +176,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                             ),
                                             action: null);
                                       },
-                                      icon: Icon(Icons.business),
+                                      icon: const Icon(Icons.business),
                                       label: Text(
                                         "Block or Building",
                                         style: TextStyle(
@@ -184,7 +185,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                                 .selectionColor,
                                             fontSize: 12),
                                       )),
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 10,
                                   ),
                                   ElevatedButton.icon(
@@ -214,7 +215,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                             ),
                                             action: null);
                                       },
-                                      icon: Icon(Icons.layers_rounded),
+                                      icon: const Icon(Icons.layers_rounded),
                                       label: Text(
                                         "Floor",
                                         style: TextStyle(
@@ -307,15 +308,17 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                                   fn: refresh,
                                                   callback: () {
                                                     pg.animateToPage(0,
-                                                        duration: Duration(
-                                                            milliseconds: 650),
+                                                        duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    650),
                                                         curve:
                                                             Curves.easeOutExpo);
                                                   },
                                                 );
                                               });
                                               pg.animateToPage(1,
-                                                  duration: Duration(
+                                                  duration: const Duration(
                                                       milliseconds: 650),
                                                   curve: Curves.easeOutExpo);
                                             },
@@ -359,7 +362,8 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                                             "${entry["status"]} - ${entry["block"]}" +
                                                                 entry[
                                                                     "room_number"]),
-                                                        SizedBox(width: 15),
+                                                        const SizedBox(
+                                                            width: 15),
                                                         Text(
                                                           "Block ${entry["block"]} | Floor ${entry["floor"].toString()}",
                                                           style: TextStyle(
@@ -376,7 +380,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                                         )
                                                       ],
                                                     ),
-                                                    SizedBox(height: 8),
+                                                    const SizedBox(height: 8),
                                                     Row(
                                                         mainAxisAlignment:
                                                             MainAxisAlignment
@@ -402,7 +406,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                                                         .w300,
                                                                 fontSize: 12),
                                                           ),
-                                                          SizedBox(
+                                                          const SizedBox(
                                                             width: 60,
                                                             height: 30,
                                                             // child: FacePile(
@@ -437,7 +441,7 @@ class _hallInfoUiState extends State<hallInfoUi> {
                                         ),
                                       ),
                                     ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 30,
                                 )
                               ])),
@@ -450,18 +454,18 @@ class _hallInfoUiState extends State<hallInfoUi> {
                     ElevatedButton(
                         onPressed: () {
                           pg.animateToPage(0,
-                              duration: Duration(seconds: 1),
+                              duration: const Duration(seconds: 1),
                               curve: Curves.easeOutExpo);
                         },
-                        child: Text("click me")),
+                        child: const Text("click me")),
                 cacheOfThirdPage ??
                     ElevatedButton(
                         onPressed: () {
                           pg.animateToPage(0,
-                              duration: Duration(seconds: 1),
+                              duration: const Duration(seconds: 1),
                               curve: Curves.easeOutExpo);
                         },
-                        child: Text("click me")),
+                        child: const Text("click me")),
               ],
             ),
           );
@@ -473,7 +477,7 @@ class DisplayHallData extends StatefulWidget {
   final Function fn;
   final Function()? callback;
 
-  DisplayHallData(
+  const DisplayHallData(
       {Key? key, required this.hallData, this.callback, required this.fn})
       : super(key: key);
 
@@ -501,11 +505,11 @@ class _DisplayHallDataState extends State<DisplayHallData> {
             },
           ));
         },
+        backgroundColor: Theme.of(context).focusColor.withOpacity(1),
         child: Icon(
           Icons.event_note,
           color: Theme.of(context).textSelectionTheme.selectionColor,
         ),
-        backgroundColor: Theme.of(context).focusColor.withOpacity(1),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.transparent,
@@ -523,7 +527,7 @@ class _DisplayHallDataState extends State<DisplayHallData> {
       ),
       body: SingleChildScrollView(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxHeight: 1200, // Set your desired maximum height here
           ),
           child: Padding(
@@ -539,7 +543,7 @@ class _DisplayHallDataState extends State<DisplayHallData> {
                   seatCount: widget.hallData['seat_count'],
                   hallType: widget.hallData['type'],
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 Text(
                   'Schedules :',
                   style: TextStyle(
@@ -549,7 +553,7 @@ class _DisplayHallDataState extends State<DisplayHallData> {
                           .textSelectionTheme
                           .selectionHandleColor),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 widget.hallData['status'] != "Free"
                     ? HallScheduleTimeline(
                         scheduleData: widget.hallData["schedule"],
@@ -576,7 +580,8 @@ class HallInfoCard extends StatelessWidget {
   final int seatCount;
   final String hallType;
 
-  HallInfoCard({
+  const HallInfoCard({
+    super.key,
     required this.roomNumber,
     required this.block,
     required this.floor,
@@ -601,12 +606,12 @@ class HallInfoCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.room,
                   size: 30,
                   color: Colors.indigo,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Room Number: $roomNumber',
                   style: TextStyle(
@@ -616,35 +621,35 @@ class HallInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.apartment,
                   size: 24,
                   color: Colors.grey,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 global.textWidgetWithHeavyFont(
                   'Block: $block',
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.layers,
                   size: 24,
                   color: Colors.grey,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 global.textWidgetWithHeavyFont(
                   'Floor: $floor',
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Icon(
@@ -656,7 +661,7 @@ class HallInfoCard extends StatelessWidget {
                       ? Colors.green
                       : (status == 'Planned' ? Colors.blue : Colors.orange),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Status: $status',
                   style: TextStyle(
@@ -669,29 +674,29 @@ class HallInfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.event_seat,
                   size: 24,
                   color: Colors.grey,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 global.textWidgetWithHeavyFont(
                   'Seat Count: $seatCount',
                 ),
               ],
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.meeting_room,
                   size: 24,
                   color: Colors.grey,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 global.textWidgetWithHeavyFont(
                   'Hall Type: $hallType',
                 ),
@@ -791,10 +796,11 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Icon(Icons.person, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
+                            const Icon(Icons.person,
+                                size: 18, color: Colors.grey),
+                            const SizedBox(width: 8),
                             global.textDoubleSpanWiget(
-                                'Initiated by: ', '${initBy ?? "Unknown"}'),
+                                'Initiated by: ', initBy ?? "Unknown"),
                           ],
                         ),
                       ),
@@ -802,8 +808,9 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Icon(Icons.person, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
+                            const Icon(Icons.person,
+                                size: 18, color: Colors.grey),
+                            const SizedBox(width: 8),
                             global.textDoubleSpanWiget('Chief Guest: ',
                                 '${data["info"]["chiefGuestName"] ?? "None"}'),
                           ],
@@ -813,8 +820,9 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Icon(Icons.school, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
+                            const Icon(Icons.school,
+                                size: 18, color: Colors.grey),
+                            const SizedBox(width: 8),
                             global.textDoubleSpanWiget('Type of Training: ',
                                 '${data["info"]["typeOfTraining"] ?? "None"}'),
                           ],
@@ -824,14 +832,15 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
-                            Icon(Icons.people, size: 18, color: Colors.grey),
-                            SizedBox(width: 8),
+                            const Icon(Icons.people,
+                                size: 18, color: Colors.grey),
+                            const SizedBox(width: 8),
                             global.textDoubleSpanWiget('Number of Students: ',
                                 '${data["info"]["numberOfStudents"] ?? "0"}'),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -856,7 +865,7 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                                 },
                               ));
                             },
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             label: global.textWidget_ns('Edit'),
                           ),
                           ElevatedButton.icon(
@@ -898,7 +907,7 @@ class _HallScheduleTimelineState extends State<HallScheduleTimeline> {
                                       .cursorColor),
                             ),
                             style: ElevatedButton.styleFrom(
-                              primary: Colors
+                              backgroundColor: Colors
                                   .redAccent, // Use red color for delete button
                             ),
                           ),
@@ -1075,11 +1084,11 @@ class _createShedState extends State<createShed> {
             debugPrint(update.data.toString());
           }
         },
+        backgroundColor: Theme.of(context).focusColor.withOpacity(1),
         child: Icon(
           Icons.done,
           color: Theme.of(context).textSelectionTheme.selectionColor,
         ),
-        backgroundColor: Theme.of(context).focusColor.withOpacity(1),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       backgroundColor: Colors.transparent,
@@ -1110,7 +1119,7 @@ class _createShedState extends State<createShed> {
                           color: Theme.of(context)
                               .textSelectionTheme
                               .selectionColor),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       global.textWidgetWithHeavyFont('From'),
                     ],
                   ),
@@ -1120,13 +1129,13 @@ class _createShedState extends State<createShed> {
                           color: Theme.of(context)
                               .textSelectionTheme
                               .selectionColor),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       global.textWidgetWithHeavyFont('To'),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -1161,7 +1170,7 @@ class _createShedState extends State<createShed> {
                   ],
                 ),
               ),
-              SizedBox(height: 30),
+              const SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -1171,7 +1180,7 @@ class _createShedState extends State<createShed> {
                           color: Theme.of(context)
                               .textSelectionTheme
                               .selectionColor),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       global.textWidgetWithHeavyFont('From'),
                     ],
                   ),
@@ -1181,13 +1190,13 @@ class _createShedState extends State<createShed> {
                           color: Theme.of(context)
                               .textSelectionTheme
                               .selectionColor),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       global.textWidgetWithHeavyFont('To'),
                     ],
                   ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -1222,12 +1231,12 @@ class _createShedState extends State<createShed> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: _controller,
                 decoration: InputDecoration(
                   labelText: 'Reason for Scheduling',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   labelStyle: TextStyle(
                       color: Theme.of(context)
                           .textSelectionTheme
@@ -1238,7 +1247,7 @@ class _createShedState extends State<createShed> {
                     color: Theme.of(context).textSelectionTheme.selectionColor),
                 onSubmitted: (a) {},
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -1250,7 +1259,7 @@ class _createShedState extends State<createShed> {
 class FunctionRequirementData {
   TextEditingController functionNameController = TextEditingController();
   DateTime startingDate = DateTime.now();
-  Duration timeDuration = Duration(hours: 1);
+  Duration timeDuration = const Duration(hours: 1);
   TextEditingController venueController = TextEditingController();
   TextEditingController typeOfTrainingController = TextEditingController();
   TextEditingController numberOfStudentsController = TextEditingController();
@@ -1344,12 +1353,13 @@ class FunctionRequirementForm extends StatefulWidget {
 
   const FunctionRequirementForm(
       {super.key, required this.hallData, this.existingShed, required this.fn});
+  @override
   _FunctionRequirementFormState createState() =>
       _FunctionRequirementFormState();
 }
 
 class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
   int _currentPage = 0;
   FunctionRequirementData formData = FunctionRequirementData();
 
@@ -1364,7 +1374,7 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
   void nextPage() {
     if (_currentPage < 4 - 1) {
       _pageController.nextPage(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
     } else {
@@ -1414,7 +1424,7 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Function Requirement Form'),
+        title: const Text('Function Requirement Form'),
       ),
       body: Column(
         children: [
@@ -1469,7 +1479,7 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
                   top: 0,
                   child: Container(
                     color: Colors.grey[100],
-                    padding: EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -1491,7 +1501,7 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
         onPressed: nextPage,
         label: Text(
           _currentPage < 4 - 1 ? 'Next' : 'Submit',
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
         icon: Icon(
           _currentPage < 4 - 1 ? Icons.arrow_forward : Icons.check,
@@ -1507,16 +1517,16 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
       onTap: () {
         _pageController.animateToPage(
           index,
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
       },
       child: AnimatedOpacity(
         opacity: isActive ? 1.0 : 0.5,
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         child: AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: isActive ? Colors.blue : Colors.transparent,
             borderRadius: BorderRadius.circular(30),
@@ -1527,7 +1537,7 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
                 icon,
                 color: isActive ? Colors.white : Colors.black,
               ),
-              if (isActive) SizedBox(width: 8),
+              if (isActive) const SizedBox(width: 8),
               if (isActive)
                 Text(
                   label,
@@ -1547,7 +1557,9 @@ class _FunctionRequirementFormState extends State<FunctionRequirementForm> {
 class DepartmentPage extends StatefulWidget {
   final FunctionRequirementData formData;
   final ValueChanged<FunctionRequirementData> onDataChanged;
-  DepartmentPage({required this.formData, required this.onDataChanged});
+  const DepartmentPage(
+      {super.key, required this.formData, required this.onDataChanged});
+  @override
   State<DepartmentPage> createState() => _DepartmentPageState();
 }
 
@@ -1558,16 +1570,16 @@ class _DepartmentPageState extends State<DepartmentPage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 40.0),
+          const SizedBox(height: 40.0),
           ListTile(
-            leading: Icon(Icons.check_circle),
+            leading: const Icon(Icons.check_circle),
             title: TextFormField(
               controller: widget.formData.functionNameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Name of the Function',
                 border: OutlineInputBorder(),
               ),
@@ -1578,7 +1590,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
               Expanded(
                 flex: 1,
                 child: ListTile(
-                  leading: Icon(Icons.calendar_today),
+                  leading: const Icon(Icons.calendar_today),
                   subtitle: global.textWidget("Starting date"),
                   title: InkWell(
                     onTap: () => _selectFromDate(context),
@@ -1593,7 +1605,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
               ),
               Expanded(
                 child: ListTile(
-                  leading: Icon(Icons.access_time),
+                  leading: const Icon(Icons.access_time),
                   subtitle: global.textWidget("Starting time"),
                   title: InkWell(
                     onTap: () => _selectFromTime(context),
@@ -1609,7 +1621,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
             ],
           ),
           ListTile(
-            leading: Icon(Icons.access_time),
+            leading: const Icon(Icons.access_time),
             subtitle: global.textWidget("Time duration"),
             title: InkWell(
               onTap: () {
@@ -1617,7 +1629,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
               },
               child: Text(
                 formatDuration(widget.formData.timeDuration),
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
             ),
           ),
@@ -1631,12 +1643,12 @@ class _DepartmentPageState extends State<DepartmentPage> {
           //     ),
           //   ),
           // ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ListTile(
-            leading: Icon(Icons.school),
+            leading: const Icon(Icons.school),
             title: TextFormField(
               controller: widget.formData.typeOfTrainingController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Type of Training',
                 border: OutlineInputBorder(),
               ),
@@ -1649,11 +1661,11 @@ class _DepartmentPageState extends State<DepartmentPage> {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.people),
+            leading: const Icon(Icons.people),
             title: TextFormField(
               controller: widget.formData.numberOfStudentsController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Number of Students',
                 border: OutlineInputBorder(),
               ),
@@ -1666,18 +1678,18 @@ class _DepartmentPageState extends State<DepartmentPage> {
               },
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ListTile(
-            leading: Icon(Icons.person),
+            leading: const Icon(Icons.person),
             title: TextFormField(
               controller: widget.formData.chiefGuestNameController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Name of Chief Guest with designation',
                 border: OutlineInputBorder(),
               ),
             ),
           ),
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
         ],
       ),
     );
@@ -1687,7 +1699,7 @@ class _DepartmentPageState extends State<DepartmentPage> {
     Duration? pickedDuration = await showCupertinoModalPopup<Duration>(
       context: context,
       builder: (BuildContext context) {
-        return Container(
+        return SizedBox(
           height: 200.0,
           child: CupertinoTimerPicker(
             mode: CupertinoTimerPickerMode.hm, // Hours and Minutes mode
@@ -1767,8 +1779,9 @@ class _DepartmentPageState extends State<DepartmentPage> {
 class FacilitiesRequirementPage extends StatefulWidget {
   final FunctionRequirementData formData;
   final ValueChanged<FunctionRequirementData> onDataChanged;
-  FacilitiesRequirementPage(
-      {required this.formData, required this.onDataChanged});
+  const FacilitiesRequirementPage(
+      {super.key, required this.formData, required this.onDataChanged});
+  @override
   State<FacilitiesRequirementPage> createState() =>
       _FacilitiesRequirementPageState();
 }
@@ -1777,11 +1790,11 @@ class _FacilitiesRequirementPageState extends State<FacilitiesRequirementPage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 40.0),
+          const SizedBox(height: 40.0),
           Row(
             children: [
               Expanded(
@@ -1795,7 +1808,7 @@ class _FacilitiesRequirementPageState extends State<FacilitiesRequirementPage> {
               ),
               Expanded(
                 child: ListTile(
-                  leading: Icon(Icons.access_time),
+                  leading: const Icon(Icons.access_time),
                   subtitle: global.textWidget("Refreshment time"),
                   title: InkWell(
                     onTap: () => _selectFromTime(context),
@@ -1824,7 +1837,7 @@ class _FacilitiesRequirementPageState extends State<FacilitiesRequirementPage> {
               ),
               Expanded(
                 child: ListTile(
-                  leading: Icon(Icons.access_time),
+                  leading: const Icon(Icons.access_time),
                   subtitle: global.textWidget("Refreshment time"),
                   title: InkWell(
                     onTap: () => _selectFromStudentTime(context),
@@ -1856,13 +1869,13 @@ class _FacilitiesRequirementPageState extends State<FacilitiesRequirementPage> {
       IconData? icon,
       String subtitle = ""}) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
       subtitle: subtitle != "" ? global.textWidget(subtitle) : null,
       title: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
       leading: Icon(icon),
@@ -1919,16 +1932,17 @@ class _FacilitiesRequirementPageState extends State<FacilitiesRequirementPage> {
 class PowerSystemCameraPage extends StatelessWidget {
   final FunctionRequirementData formData;
   final ValueChanged<FunctionRequirementData> onDataChanged;
-  PowerSystemCameraPage({required this.formData, required this.onDataChanged});
+  const PowerSystemCameraPage(
+      {super.key, required this.formData, required this.onDataChanged});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 40.0),
+          const SizedBox(height: 40.0),
           _buildFormField(
             controller: formData.micRequiredController,
             label: 'Microphone',
@@ -1965,13 +1979,13 @@ class PowerSystemCameraPage extends StatelessWidget {
       IconData? icon,
       String subtitle = ""}) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
       subtitle: subtitle != "" ? global.textWidget(subtitle) : null,
       title: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
       leading: Icon(icon),
@@ -1982,17 +1996,17 @@ class PowerSystemCameraPage extends StatelessWidget {
 class MementoSeatingReceptionPage extends StatelessWidget {
   final FunctionRequirementData formData;
   final ValueChanged<FunctionRequirementData> onDataChanged;
-  MementoSeatingReceptionPage(
-      {required this.formData, required this.onDataChanged});
+  const MementoSeatingReceptionPage(
+      {super.key, required this.formData, required this.onDataChanged});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 40.0),
+          const SizedBox(height: 40.0),
           _buildFormField(
             controller: formData.mementoQuantityWorthController,
             label: 'Memento / Honorarium for Chief Guest [quantity and worth]',
@@ -2029,13 +2043,13 @@ class MementoSeatingReceptionPage extends StatelessWidget {
       IconData? icon,
       String subtitle = ""}) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8.0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
       subtitle: subtitle != "" ? global.textWidget(subtitle) : null,
       title: TextFormField(
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
       leading: Icon(icon),

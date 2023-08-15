@@ -4,8 +4,13 @@ import 'package:Project_Prism/global.dart' as global;
 import 'package:Project_Prism/ui/face_detection.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:http/http.dart' as http;
 
 List<Object> face = [];
+
+Function? SetState;
+BuildContext? ctx;
 
 Future<String> uploadImageToFirestore(
     Uint8List imageBytes, String imageName) async {
@@ -37,10 +42,12 @@ class _profileState extends State<profile> {
     email = global.account!.email!;
     super.initState();
     facePhotoUrl = global.accObj!.facePhoto;
+    SetState = setState;
   }
 
   @override
   Widget build(BuildContext context) {
+    ctx = context;
     return Scaffold(
       backgroundColor: Theme.of(context).focusColor, // Updated background color
       body: Center(
@@ -77,15 +84,98 @@ class _profileState extends State<profile> {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
+                bool isAllowed = true;
+                bool backButtonPressed = false;
                 global.cameraShotFn = (dynamic listOfFace) async {
                   var attempt = listOfFace as List<Object>;
 
                   if (attempt.length != 1) {
                     global.snackbarText("Only one face is allowed.");
                   } else {
-                    global.switchToPrimaryUi();
+                    if (!isAllowed) return;
+                    isAllowed = false;
+                    global.alert.customAlertNoActionWithoutPopScope(
+                        global.rootCTX!,
+                        Container(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SpinKitCircle(
+                                  color: Colors.blue, // Customize the color
+                                  size: 50, // Customize the size
+                                ),
+                                const SizedBox(height: 10),
+                                global.textWidgetWithHeavyFont(
+                                  'Updating...',
+                                ),
+                              ],
+                            )),
+                        null, () {
+                      backButtonPressed = true;
+                    }, () {});
+
                     face = attempt[0] as List<Object>;
                     try {
+                      String url = "https://id.sempit.repl.co/verify";
+                      List<http.MultipartFile> imageFiles = [];
+
+                      for (dynamic image in [face[0]]) {
+                        Uint8List compressedData = await compressImage(image);
+                        imageFiles.add(
+                          http.MultipartFile.fromBytes(
+                            'file',
+                            compressedData,
+                            filename: 'image_verification.jpeg',
+                          ),
+                        );
+                      }
+
+                      try {
+                        final request =
+                            http.MultipartRequest('GET', Uri.parse(url));
+                        request.files.addAll(imageFiles);
+
+                        final response = await request.send();
+
+                        if (response.statusCode == 200) {
+                          // Successful response handling
+                          debugPrint('Images uploaded successfully');
+                          final responseString =
+                              await response.stream.bytesToString();
+
+                          if (responseString != "Face found") {
+                            global.snackbarText(
+                                "FAILED | Backend failed to detect the face");
+                            if (!backButtonPressed) {
+                              Navigator.pop(global.rootCTX!);
+                            }
+
+                            debugPrint(responseString);
+                            isAllowed = true;
+                            return;
+                          }
+                        } else {
+                          // Handle error
+                          global.snackbarText('Image upload failed');
+                          if (!backButtonPressed) {
+                            Navigator.pop(global.rootCTX!);
+                          }
+
+                          isAllowed = true;
+
+                          return;
+                        }
+                      } catch (e) {
+                        // Handle network error
+                        global.snackbarText('Network error: $e');
+                        isAllowed = true;
+                        if (!backButtonPressed) {
+                          Navigator.pop(global.rootCTX!);
+                        }
+
+                        return;
+                      }
                       String href = await uploadImageToFirestore(
                           face[0] as Uint8List, global.account!.email!);
                       global.accObj!.facePhoto = href;
@@ -94,10 +184,20 @@ class _profileState extends State<profile> {
                           global.Database!.addCollection("acc", "/acc"),
                           global.account!.email!,
                           global.accObj!.toJson());
+                      isAllowed = true;
+                      if (!backButtonPressed) {
+                        Navigator.pop(global.rootCTX!);
+                      }
+
+                      global.switchToPrimaryUi();
+
                       global.snackbarText("Successfully updated the account!");
-                      setState(() {});
+                      await Future.delayed(const Duration(seconds: 1),
+                          () async {
+                        global.rootRefresh!();
+                      });
                     } catch (e) {
-                      global.snackbarText("Failed to update, check logs");
+                      global.snackbarText("Failed to update, ${e.toString()}");
                       debugPrint(e.toString());
                     }
                   }

@@ -1,18 +1,18 @@
 import 'dart:ui';
 
+import 'package:Project_Prism/database.dart';
+import 'package:Project_Prism/global.dart' as global;
+import 'package:Project_Prism/ui/leaveForm.dart';
 import 'package:clickable_list_wheel_view/clickable_list_wheel_widget.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_field/date_field.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:date_field/date_field.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:Project_Prism/database.dart';
-import 'package:Project_Prism/global.dart' as global;
 import 'package:semicircle_indicator/semicircle_indicator.dart';
 
 dynamic data;
@@ -100,322 +100,69 @@ class _classroomState extends State<classroom> {
       body: global.accountType == 2
           ? Padding(
               padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: AnimationConfiguration.toStaggeredList(
-                        duration: const Duration(milliseconds: 300),
-                        childAnimationBuilder: (widget) => SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(
-                            child: widget,
-                          ),
-                        ),
-                        children: [
-                          global.textWidget(
-                              "This UI is subjected to overhaul and will be done sooner as possible."),
-                          global.padHeight(10),
-                          Card(
-                            color:
-                                Theme.of(context).focusColor.withOpacity(0.3),
-                            surfaceTintColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            borderOnForeground: false,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                "         ${global.accObj!.year!.toUpperCase()}   ${global.accObj!.department!.toUpperCase()}-${global.accObj!.section!.toUpperCase()}         ",
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .textSelectionTheme
-                                        .selectionHandleColor,
-                                    fontSize: 23),
-                              ),
+              child: ShaderMask(
+                shaderCallback: (Rect rect) {
+                  return const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.grey,
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black
+                    ],
+                    stops: [0.01, 0.05, 0.8, 1.0],
+                  ).createShader(rect);
+                },
+                blendMode: BlendMode.dstOut,
+                child: SingleChildScrollView(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: AnimationConfiguration.toStaggeredList(
+                          duration: const Duration(milliseconds: 300),
+                          childAnimationBuilder: (widget) => SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: widget,
                             ),
                           ),
-                          global.padHeight(45),
-                          global.textWidgetWithHeavyFont("PERSONAL RECORD"),
-                          global.padHeight(10),
-                          Card(
-                            color:
-                                Theme.of(context).focusColor.withOpacity(0.3),
-                            surfaceTintColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            borderOnForeground: false,
-                            child: Padding(
+                          children: [
+                            global.padHeight(20),
+                            global.textWidget(
+                                "This UI is subjected to overhaul and will be done sooner as possible."),
+                            global.padHeight(10),
+                            Card(
+                              color:
+                                  Theme.of(context).focusColor.withOpacity(0.3),
+                              surfaceTintColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              borderOnForeground: false,
+                              child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                    width: double.infinity,
-                                    height: 150,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              height: 130,
-                                              width: 110,
-                                              child: Card(
-                                                color: Theme.of(context)
-                                                    .focusColor
-                                                    .withOpacity(0.6),
-                                                surfaceTintColor:
-                                                    Colors.transparent,
-                                                shadowColor: Colors.transparent,
-                                                borderOnForeground: false,
-                                                child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child:
-                                                              global.textWidget(
-                                                                  "Attendance"),
-                                                        ),
-                                                        Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: global
-                                                                .textDoubleSpanWiget(
-                                                                    "Absent: ",
-                                                                    selfAbsentCount
-                                                                        .toString())),
-                                                        Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: global
-                                                                .textDoubleSpanWiget(
-                                                                    "On-Duty: ",
-                                                                    selfOnDutyCount
-                                                                        .toString())),
-                                                      ],
-                                                    )),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 130,
-                                              width: 110,
-                                              child: Card(
-                                                color: Theme.of(context)
-                                                    .focusColor
-                                                    .withOpacity(0.6),
-                                                surfaceTintColor:
-                                                    Colors.transparent,
-                                                shadowColor: Colors.transparent,
-                                                borderOnForeground: false,
-                                                child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Stack(
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child:
-                                                              global.textWidget(
-                                                                  "Test score"),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Center(
-                                                            child:
-                                                                SemicircularIndicator(
-                                                              radius: 30,
-                                                              strokeWidth: 2,
-                                                              progress: 0.35,
-                                                              contain: true,
-                                                              backgroundColor:
-                                                                  Colors.white,
-                                                              color:
-                                                                  Colors.blue,
-                                                              bottomPadding: 0,
-                                                              child: Text(
-                                                                '35%',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Theme.of(
-                                                                            context)
-                                                                        .textSelectionTheme
-                                                                        .cursorColor),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ))),
-                          ),
-                          global.padHeight(),
-                          global.textDoubleSpanWiget(
-                              "Status :", " Present on the class right now."),
-                          global.padHeight(45),
-                          global.textWidgetWithHeavyFont("CLASS RECORD"),
-                          global.padHeight(10),
-                          Card(
-                            color:
-                                Theme.of(context).focusColor.withOpacity(0.3),
-                            surfaceTintColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            borderOnForeground: false,
-                            child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                    width: double.infinity,
-                                    height: 150,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              height: 130,
-                                              width: 110,
-                                              child: Card(
-                                                color: Theme.of(context)
-                                                    .focusColor
-                                                    .withOpacity(0.6),
-                                                surfaceTintColor:
-                                                    Colors.transparent,
-                                                shadowColor: Colors.transparent,
-                                                borderOnForeground: false,
-                                                child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child:
-                                                              global.textWidget(
-                                                                  "Attendance"),
-                                                        ),
-                                                        Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: global
-                                                                .textDoubleSpanWiget(
-                                                                    "Absent: ",
-                                                                    classAbsentCount
-                                                                        .toString())),
-                                                        Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .all(8.0),
-                                                            child: global
-                                                                .textDoubleSpanWiget(
-                                                                    "On-Duty: ",
-                                                                    classOnDutyCount
-                                                                        .toString())),
-                                                      ],
-                                                    )),
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              height: 130,
-                                              width: 110,
-                                              child: Card(
-                                                color: Theme.of(context)
-                                                    .focusColor
-                                                    .withOpacity(0.6),
-                                                surfaceTintColor:
-                                                    Colors.transparent,
-                                                shadowColor: Colors.transparent,
-                                                borderOnForeground: false,
-                                                child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Stack(
-                                                      clipBehavior: Clip.none,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child:
-                                                              global.textWidget(
-                                                                  "Avg score"),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Center(
-                                                            child:
-                                                                SemicircularIndicator(
-                                                              radius: 30,
-                                                              strokeWidth: 2,
-                                                              progress: 0.35,
-                                                              contain: true,
-                                                              backgroundColor:
-                                                                  Colors.white,
-                                                              color:
-                                                                  Colors.blue,
-                                                              bottomPadding: 0,
-                                                              child: Text(
-                                                                '35%',
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        15,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    color: Theme.of(
-                                                                            context)
-                                                                        .textSelectionTheme
-                                                                        .cursorColor),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    )),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ))),
-                          ),
-                          global.padHeight(30),
-                          Wrap(
-                            children: [
-                              ChoiceChip(
-                                label: Text("Check Class Attendance Sheet"),
-                                avatar: Icon(Icons.add_task),
-                                onSelected: (bool val) {
+                                child: Text(
+                                  "         ${global.accObj!.branchCode} ${global.accObj!.year!.toUpperCase()}-${global.accObj!.section!.toUpperCase()}          ",
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .textSelectionTheme
+                                          .selectionHandleColor,
+                                      fontSize: 23),
+                                ),
+                              ),
+                            ),
+                            global.padHeight(45),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).focusColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
                                   Navigator.push(
                                       context,
                                       PageRouteBuilder(
                                           pageBuilder: (c, a1, a2) =>
-                                              attendanceChecklist(),
+                                              const attendanceChecklist(),
                                           opaque: false,
                                           transitionsBuilder: (context,
                                                   animation,
@@ -445,13 +192,405 @@ class _classroomState extends State<classroom> {
                                           transitionDuration:
                                               const Duration(seconds: 1)));
                                 },
-                                selected: false,
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 40)
-                        ],
-                      ))),
+                                child: ListTile(
+                                  tileColor: Colors.transparent,
+                                  style: ListTileStyle.list,
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        Theme.of(context).focusColor,
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      color: Theme.of(context)
+                                          .textSelectionTheme
+                                          .selectionColor,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  title: global.textWidgetWithHeavyFont(
+                                    "Attendance",
+                                  ),
+                                  subtitle: global.textWidget_ns(
+                                    "Check the class attendance information",
+                                  ),
+                                ),
+                              ),
+                            ),
+                            global.padHeight(20),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).focusColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                          pageBuilder: (c, a1, a2) =>
+                                              const attendanceChecklist(),
+                                          opaque: false,
+                                          transitionsBuilder: (context,
+                                                  animation,
+                                                  secondaryAnimation,
+                                                  child) =>
+                                              FadeTransition(
+                                                  opacity: animation,
+                                                  child: ScaleTransition(
+                                                      scale: animation.drive(
+                                                        Tween(
+                                                                begin: 1.5,
+                                                                end: 1.0)
+                                                            .chain(CurveTween(
+                                                                curve: Curves
+                                                                    .easeOutCubic)),
+                                                      ),
+                                                      child: BackdropFilter(
+                                                        filter: ImageFilter.blur(
+                                                            sigmaX: animation
+                                                                    .value *
+                                                                20,
+                                                            sigmaY: animation
+                                                                    .value *
+                                                                20),
+                                                        child: child,
+                                                      ))),
+                                          transitionDuration:
+                                              const Duration(seconds: 1)));
+                                },
+                                child: ListTile(
+                                  tileColor: Colors.transparent,
+                                  style: ListTileStyle.list,
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        Theme.of(context).focusColor,
+                                    child: const Icon(
+                                      Icons.poll,
+                                      color: Colors.green,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  title: global.textWidgetWithHeavyFont(
+                                    "Polls",
+                                  ),
+                                  subtitle: global.textWidget_ns(
+                                    "The insights and opinions from others",
+                                  ),
+                                ),
+                              ),
+                            ),
+                            global.padHeight(20),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).focusColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(10),
+                                onTap: () {
+                                  leaveFormPrompt(context);
+                                },
+                                child: ListTile(
+                                  tileColor: Colors.transparent,
+                                  style: ListTileStyle.list,
+                                  leading: CircleAvatar(
+                                    backgroundColor:
+                                        Theme.of(context).focusColor,
+                                    child: const Icon(
+                                      Icons.directions_run,
+                                      color: Colors.blue,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  title: global.textWidgetWithHeavyFont(
+                                    "Leave/On-duty Application",
+                                  ),
+                                  subtitle: global.textWidget_ns(
+                                    "Check your status on leave/on-duty forms",
+                                  ),
+                                ),
+                              ),
+                            ),
+                            global.padHeight(20),
+                            global.textWidgetWithHeavyFont("PERSONAL RECORD"),
+                            global.padHeight(10),
+                            Card(
+                              color:
+                                  Theme.of(context).focusColor.withOpacity(0.3),
+                              surfaceTintColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              borderOnForeground: false,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                      width: double.infinity,
+                                      height: 150,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                height: 130,
+                                                width: 110,
+                                                child: Card(
+                                                  color: Theme.of(context)
+                                                      .focusColor
+                                                      .withOpacity(0.6),
+                                                  surfaceTintColor:
+                                                      Colors.transparent,
+                                                  shadowColor:
+                                                      Colors.transparent,
+                                                  borderOnForeground: false,
+                                                  child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Column(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: global
+                                                                .textWidget(
+                                                                    "Attendance"),
+                                                          ),
+                                                          Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: global.textDoubleSpanWiget(
+                                                                  "Absent: ",
+                                                                  selfAbsentCount
+                                                                      .toString())),
+                                                          Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: global.textDoubleSpanWiget(
+                                                                  "On-Duty: ",
+                                                                  selfOnDutyCount
+                                                                      .toString())),
+                                                        ],
+                                                      )),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 130,
+                                                width: 110,
+                                                child: Card(
+                                                  color: Theme.of(context)
+                                                      .focusColor
+                                                      .withOpacity(0.6),
+                                                  surfaceTintColor:
+                                                      Colors.transparent,
+                                                  shadowColor:
+                                                      Colors.transparent,
+                                                  borderOnForeground: false,
+                                                  child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Stack(
+                                                        clipBehavior: Clip.none,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: global
+                                                                .textWidget(
+                                                                    "Test score"),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Center(
+                                                              child:
+                                                                  SemicircularIndicator(
+                                                                radius: 30,
+                                                                strokeWidth: 2,
+                                                                progress: 0.35,
+                                                                contain: true,
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                color:
+                                                                    Colors.blue,
+                                                                bottomPadding:
+                                                                    0,
+                                                                child: Text(
+                                                                  '35%',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Theme.of(
+                                                                              context)
+                                                                          .textSelectionTheme
+                                                                          .cursorColor),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ))),
+                            ),
+                            global.padHeight(),
+                            global.textDoubleSpanWiget(
+                                "Status :", " Present on the class right now."),
+                            global.padHeight(45),
+                            global.textWidgetWithHeavyFont("CLASS RECORD"),
+                            global.padHeight(10),
+                            Card(
+                              color:
+                                  Theme.of(context).focusColor.withOpacity(0.3),
+                              surfaceTintColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              borderOnForeground: false,
+                              child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                      width: double.infinity,
+                                      height: 150,
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Row(
+                                            children: [
+                                              SizedBox(
+                                                height: 130,
+                                                width: 110,
+                                                child: Card(
+                                                  color: Theme.of(context)
+                                                      .focusColor
+                                                      .withOpacity(0.6),
+                                                  surfaceTintColor:
+                                                      Colors.transparent,
+                                                  shadowColor:
+                                                      Colors.transparent,
+                                                  borderOnForeground: false,
+                                                  child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Column(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: global
+                                                                .textWidget(
+                                                                    "Attendance"),
+                                                          ),
+                                                          Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: global.textDoubleSpanWiget(
+                                                                  "Absent: ",
+                                                                  classAbsentCount
+                                                                      .toString())),
+                                                          Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8.0),
+                                                              child: global.textDoubleSpanWiget(
+                                                                  "On-Duty: ",
+                                                                  classOnDutyCount
+                                                                      .toString())),
+                                                        ],
+                                                      )),
+                                                ),
+                                              ),
+                                              SizedBox(
+                                                height: 130,
+                                                width: 110,
+                                                child: Card(
+                                                  color: Theme.of(context)
+                                                      .focusColor
+                                                      .withOpacity(0.6),
+                                                  surfaceTintColor:
+                                                      Colors.transparent,
+                                                  shadowColor:
+                                                      Colors.transparent,
+                                                  borderOnForeground: false,
+                                                  child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Stack(
+                                                        clipBehavior: Clip.none,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: global
+                                                                .textWidget(
+                                                                    "Avg score"),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Center(
+                                                              child:
+                                                                  SemicircularIndicator(
+                                                                radius: 30,
+                                                                strokeWidth: 2,
+                                                                progress: 0.35,
+                                                                contain: true,
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                color:
+                                                                    Colors.blue,
+                                                                bottomPadding:
+                                                                    0,
+                                                                child: Text(
+                                                                  '35%',
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          15,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                      color: Theme.of(
+                                                                              context)
+                                                                          .textSelectionTheme
+                                                                          .cursorColor),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      )),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ))),
+                            ),
+                            global.padHeight(30),
+                            const SizedBox(height: 40)
+                          ],
+                        ))),
+              ),
             )
           : Padding(
               padding: const EdgeInsets.all(28.0),
@@ -475,7 +614,7 @@ class _classroomState extends State<classroom> {
                       label:
                           global.textWidget("Department : ${depart.join(",")}"),
                       onSelected: (value) {
-                        global.alert.quickAlert(context, SizedBox(),
+                        global.alert.quickAlert(context, const SizedBox(),
                             bodyFn: () {
                           return Column(
                               mainAxisSize: MainAxisSize.min,
@@ -520,7 +659,7 @@ class _classroomState extends State<classroom> {
                       },
                       selected: false,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 25,
                     ),
                     SingleChildScrollView(
@@ -549,8 +688,8 @@ class _classroomState extends State<classroom> {
                                     child: InkWell(
                                       onTap: () {
                                         data = x;
-                                        global
-                                            .switchToSecondaryUi(classInfoUI());
+                                        global.switchToSecondaryUi(
+                                            const classInfoUI());
                                       },
                                       child: SizedBox(
                                         height: 175,
@@ -566,7 +705,7 @@ class _classroomState extends State<classroom> {
                                               global.textWidgetWithHeavyFont(
                                                   "${x["year"].toString().toUpperCase()}  ${x["department"].toString().toUpperCase()}-${x["section"].toString().toUpperCase()}"),
 
-                                              SizedBox(
+                                              const SizedBox(
                                                 height: 20,
                                               ),
 
@@ -614,6 +753,8 @@ class _classroomState extends State<classroom> {
 }
 
 class classInfoUI extends StatelessWidget {
+  const classInfoUI({super.key});
+
   @override
   Widget build(BuildContext context) {
     var x = data ?? {};
@@ -624,11 +765,11 @@ class classInfoUI extends StatelessWidget {
           data = null;
           global.switchToPrimaryUi();
         },
-        label: Text(
+        label: const Text(
           "Done",
           style: TextStyle(color: Colors.white),
         ),
-        icon: Icon(Icons.done),
+        icon: const Icon(Icons.done),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -640,7 +781,7 @@ class classInfoUI extends StatelessWidget {
             children: [
               global.textWidgetWithHeavyFont(
                   "${x["year"].toString().toUpperCase()}  ${x["department"].toString().toUpperCase()}-${x["section"].toString().toUpperCase()}"),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               Card(
                   shadowColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
@@ -653,7 +794,7 @@ class classInfoUI extends StatelessWidget {
                             context,
                             PageRouteBuilder(
                                 pageBuilder: (c, a1, a2) =>
-                                    attendanceChecklist(),
+                                    const attendanceChecklist(),
                                 opaque: false,
                                 transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) =>
@@ -699,7 +840,7 @@ class classInfoUI extends StatelessWidget {
                               )
                             ],
                           )))),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               Card(
                   shadowColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
@@ -711,7 +852,8 @@ class classInfoUI extends StatelessWidget {
                         Navigator.push(
                             context,
                             PageRouteBuilder(
-                                pageBuilder: (c, a1, a2) => timeTableEditUi(),
+                                pageBuilder: (c, a1, a2) =>
+                                    const timeTableEditUi(),
                                 opaque: false,
                                 transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) =>
@@ -757,7 +899,7 @@ class classInfoUI extends StatelessWidget {
                               )
                             ],
                           )))),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               Card(
                   shadowColor: Colors.transparent,
                   surfaceTintColor: Colors.transparent,
@@ -815,7 +957,7 @@ class classInfoUI extends StatelessWidget {
                               )
                             ],
                           )))),
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               global.textWidget(
                   "Adding more data in here, such as Absentees name [current day], and then class info in an overview [class strength, roll start to end no.]")
             ],
@@ -827,6 +969,8 @@ class classInfoUI extends StatelessWidget {
 }
 
 class attendanceChecklist extends StatefulWidget {
+  const attendanceChecklist({super.key});
+
   @override
   State<attendanceChecklist> createState() => _attendanceChecklistState();
 }
@@ -863,6 +1007,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
     chosenDateStr = DateFormat("dd-MM-yyyy").format(chosenDay).toString();
     super.initState();
     debugPrint("Loading Attendance for $chosenDateStr");
+    debugPrint("aeae ${data.toString()}");
     Future.delayed(const Duration(), () async {
       loaded = false;
       try {
@@ -906,7 +1051,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
         loaded = true;
         setState(() {});
         _scrollController.animateToItem(indexPos,
-            duration: Duration(seconds: 1), curve: Curves.decelerate);
+            duration: const Duration(seconds: 1), curve: Curves.decelerate);
       } catch (e) {
         debugPrint(e.toString());
         errored = true;
@@ -1127,7 +1272,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        SizedBox(height: 30),
+                        const SizedBox(height: 30),
                         Center(
                           child: Container(
                             height: 50,
@@ -1241,7 +1386,8 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                                           setState(() {});
                                           _scrollController.animateToItem(
                                               indexPos,
-                                              duration: Duration(seconds: 1),
+                                              duration:
+                                                  const Duration(seconds: 1),
                                               curve: Curves.decelerate);
                                         } catch (e) {
                                           debugPrint(e.toString());
@@ -1256,7 +1402,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 30),
+                        const SizedBox(height: 30),
                         Padding(
                           padding: const EdgeInsets.all(25.0),
                           child: AnimatedContainer(
@@ -1315,12 +1461,12 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                                 ),
                               )),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         global.textWidgetWithHeavyFont(
                             "Select roll no. to mark as absent"),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.only(
@@ -1346,7 +1492,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                                         selected: absent[i.toString()] ?? false,
                                         label: Text(
                                           "${i.toString()}${studentInfo[i] != null ? "- ${studentInfo[i]}" : ""}",
-                                          style: TextStyle(fontSize: 10),
+                                          style: const TextStyle(fontSize: 10),
                                         ),
                                       )
                                   ],
@@ -1355,12 +1501,12 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                             ),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         global.textWidgetWithHeavyFont(
                             "Select roll no. to mark On-Duty"),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Flexible(
                           child: Padding(
                             padding: const EdgeInsets.only(
@@ -1387,7 +1533,7 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                                         selected: onDuty[i.toString()] ?? false,
                                         label: Text(
                                           "${i.toString()}${studentInfo[i] != null ? "- ${studentInfo[i]}" : ""}",
-                                          style: TextStyle(fontSize: 10),
+                                          style: const TextStyle(fontSize: 10),
                                         ),
                                       )
                                   ],
@@ -1409,6 +1555,8 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
 }
 
 class timeTableEditUi extends StatefulWidget {
+  const timeTableEditUi({super.key});
+
   @override
   State<timeTableEditUi> createState() => _timeTableEditUiState();
 }
@@ -1468,7 +1616,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
           },
         ];
     data["course"] = courseList;
-    Future.delayed(Duration(), () async {
+    Future.delayed(const Duration(), () async {
       var get = await global.Database!
           .addCollection("acc", "/acc")
           .where("isStudent", isEqualTo: false)
@@ -1553,7 +1701,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                         "Create a new course data",
                         style: TextStyle(fontSize: 13),
                       ),
-                      avatar: Icon(Icons.create),
+                      avatar: const Icon(Icons.create),
                       selected: false,
                       onSelected: (bool val) {
                         TextEditingController codeName =
@@ -1565,19 +1713,19 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
 
                         String chosenF = "no one";
 
-                        global.alert.quickAlert(context, SizedBox(),
+                        global.alert.quickAlert(context, const SizedBox(),
                             bodyFn: () => Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     global.textWidget(
                                         "Fill the following details"),
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
                                     global.textField("Subject Code Name",
                                         controller: codeName),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 10),
                                     global.textField("Subject Full Name",
                                         controller: fullName),
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
                                     DropdownButton(
                                       items: [
                                         for (var x in options)
@@ -1594,7 +1742,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                       dropdownColor:
                                           Theme.of(context).focusColor,
                                     ),
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
                                     if (chosenF == "cn")
                                       global.textField("Faculty name",
                                           controller: facultyName)
@@ -1605,7 +1753,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                   onPressed: () {
                                     Navigator.pop(context);
 
-                                    Future.delayed(Duration(), () async {
+                                    Future.delayed(const Duration(), () async {
                                       String message =
                                           "Successfully added the course in the list";
 
@@ -1643,7 +1791,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                       setState(() {});
                                     });
                                   },
-                                  child: Text("Submit"))
+                                  child: const Text("Submit"))
                             ]);
                       },
                     ),
@@ -1652,18 +1800,19 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                         "Change the timing",
                         style: TextStyle(fontSize: 13),
                       ),
-                      avatar: Icon(Icons.timeline),
+                      avatar: const Icon(Icons.timeline),
                       selected: false,
                       onSelected: (bool val) {},
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 global
                     .textWidget("Drag and drop the courses into specific day"),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 ConstrainedBox(
-                  constraints: BoxConstraints.loose(Size(double.infinity, 200)),
+                  constraints:
+                      BoxConstraints.loose(const Size(double.infinity, 200)),
                   child: SingleChildScrollView(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -1688,7 +1837,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                       child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(x["name"],
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 15,
                                               )))),
                                 ],
@@ -1710,7 +1859,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                     ),
                   ),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 DragTarget(
                   onAccept: (dataa) {
                     debugPrint("Ok deleting the ${dataa.toString()}");
@@ -1737,7 +1886,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                       success = e.toString();
                     }
 
-                    Future.delayed(Duration(), () async {
+                    Future.delayed(const Duration(), () async {
                       debugPrint("Delete operation on future function");
                       String message =
                           "Successfully removed the course in the list";
@@ -1787,18 +1936,18 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
 
                     String chosenF = "no one";
 
-                    global.alert.quickAlert(context, SizedBox(),
+                    global.alert.quickAlert(context, const SizedBox(),
                         bodyFn: () => Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 global.textWidget("Fill the following details"),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 global.textField("Subject Code Name",
                                     controller: codeName),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 global.textField("Subject Full Name",
                                     controller: fullName),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 DropdownButton(
                                   items: [
                                     for (var x in options)
@@ -1814,7 +1963,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                   value: chosenF,
                                   dropdownColor: Theme.of(context).focusColor,
                                 ),
-                                SizedBox(height: 20),
+                                const SizedBox(height: 20),
                                 if (chosenF == "cn")
                                   global.textField("Faculty name",
                                       controller: facultyName)
@@ -1825,7 +1974,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                               onPressed: () {
                                 Navigator.pop(context);
 
-                                Future.delayed(Duration(), () async {
+                                Future.delayed(const Duration(), () async {
                                   String message =
                                       "Successfully updated the course in the list";
 
@@ -1862,7 +2011,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                                   setState(() {});
                                 });
                               },
-                              child: Text("Update"))
+                              child: const Text("Update"))
                         ]);
                   },
                   onWillAccept: (data) => true,
@@ -1917,7 +2066,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                               ? 1
                               : (isExpanded[x.key] ? 4 : 1)),
                           child: AnimatedCrossFade(
-                            duration: Duration(milliseconds: 500),
+                            duration: const Duration(milliseconds: 500),
                             crossFadeState: isExpanded[x.key] == null
                                 ? CrossFadeState.showFirst
                                 : (isExpanded[x.key]
@@ -1931,7 +2080,7 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                               //surfaceTintColor: Colors.transparent,
                               label: Text(
                                 "${x.value.toString()} [${(timetable[x.key] ?? []).length}]",
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold),
@@ -1998,8 +2147,8 @@ class _timeTableEditUiState extends State<timeTableEditUi> {
                       ),
                     )
                 ]),
-                SizedBox(height: 40),
-                SizedBox(height: 30)
+                const SizedBox(height: 40),
+                const SizedBox(height: 30)
               ],
             ),
           ),
@@ -2013,6 +2162,8 @@ class classInfoEditUi extends StatelessWidget {
       TextEditingController(text: data["startRoll"].toString());
   TextEditingController endRoll =
       TextEditingController(text: data["endRoll"].toString());
+
+  classInfoEditUi({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2069,12 +2220,12 @@ class classInfoEditUi extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: global.textWidgetWithHeavyFont("Roll number structure"),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.all(25.0),
@@ -2086,7 +2237,7 @@ class classInfoEditUi extends StatelessWidget {
                         keyboardType: TextInputType.number,
                         inputFormats: [FilteringTextInputFormatter.digitsOnly],
                         maxLength: 3),
-                    SizedBox(width: 30),
+                    const SizedBox(width: 30),
                     global.textField("Ending Roll No",
                         controller: endRoll,
                         keyboardType: TextInputType.number,

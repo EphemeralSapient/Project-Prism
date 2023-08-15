@@ -1,14 +1,13 @@
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
 import 'package:Project_Prism/database.dart';
 import 'package:Project_Prism/global.dart' as global;
-import 'package:flutter/material.dart';
-import 'package:date_field/date_field.dart';
-import 'package:flutter/widgets.dart';
 import 'package:Project_Prism/ui/viewLeave.dart';
-import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:date_field/date_field.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 void leaveFormPrompt(BuildContext buildContext) {
   showModalBottomSheet(
@@ -33,7 +32,7 @@ void leaveFormPrompt(BuildContext buildContext) {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(height: 5),
+                      const SizedBox(height: 5),
                       Container(
                         height: 5,
                         width: 125,
@@ -44,7 +43,7 @@ void leaveFormPrompt(BuildContext buildContext) {
                                 .withOpacity(0.25),
                             borderRadius: BorderRadius.circular(50)),
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       ListTile(
                         leading: Icon(
                           Icons.view_compact,
@@ -83,7 +82,8 @@ void leaveFormPrompt(BuildContext buildContext) {
                                 ),
                               ),
                               onTap: () {
-                                global.switchToSecondaryUi(leaveFormApply());
+                                global.switchToSecondaryUi(
+                                    const leaveFormApply());
                                 Navigator.of(buildContext).pop();
                                 debugPrint(
                                     "paging to APPLY a new Leave Applicaitons");
@@ -99,6 +99,8 @@ void leaveFormPrompt(BuildContext buildContext) {
 }
 
 class leaveFormApply extends StatefulWidget {
+  const leaveFormApply({super.key});
+
   @override
   State<leaveFormApply> createState() => _leaveFormApplyState();
 }
@@ -116,7 +118,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
   void initState() {
     super.initState();
     facultyList["No one"] = {"firstName": "No", "lastName": "one"};
-    Future.delayed(Duration(), () async {
+    Future.delayed(const Duration(), () async {
       var get = await global.collectionMap["acc"]!
           .where("isStudent", isEqualTo: false)
           .where("phoneNo", isNotEqualTo: null)
@@ -145,7 +147,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
   Widget build(BuildContext context) {
     debugPrint("Rebuilding students leave form");
     return Scaffold(
-      backgroundColor: Theme.of(context).backgroundColor.withOpacity(1),
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
         child: Padding(
           padding:
@@ -211,19 +213,19 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                   children: [
                                     global.textWidget(
                                         "Your application will be submitted under these information :"),
-                                    SizedBox(height: 20),
+                                    const SizedBox(height: 20),
                                     global.textWidgetWithHeavyFont(
                                         "${"${global.accObj!.firstName!} ${global.accObj!.lastName!}"} of ${global.accObj!.department!.toUpperCase()} department,"),
                                     global.textWidgetWithHeavyFont(
                                         "Register number : ${global.accObj!.registerNum}"),
                                     global.textWidgetWithHeavyFont(
                                         "Roll number : ${global.accObj!.rollNo!.toUpperCase()}"),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 20,
                                     ),
                                     global.textWidget(
                                         "If you find any of these information incorrect, please change it by editing your information on Settings->Change Student data"),
-                                    SizedBox(
+                                    const SizedBox(
                                       height: 30,
                                     ),
                                     global
@@ -234,17 +236,15 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                   FloatingActionButton(
                                       mini: true,
                                       onPressed: () {
-                                        Future.delayed(Duration(), () async {
+                                        Future.delayed(const Duration(),
+                                            () async {
                                           var create = await global.Database!
                                               .create(
                                                   global.Database!
                                                       .addCollection(
                                                           "leaveForms",
                                                           "/leaveForms"),
-                                                  DateFormat(
-                                                          "dd-MM-yyyy hh:mm:ss:ms")
-                                                      .format(DateTime.now())
-                                                      .toString(),
+                                                  global.account!.email!,
                                                   {
                                                 "regNo": global
                                                     .accObj!.registerNum
@@ -294,12 +294,12 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                         Navigator.of(context).pop();
                                         global.switchToPrimaryUi();
                                       },
-                                      child: Text("Yes")),
+                                      child: const Text("Yes")),
                                   FloatingActionButton(
-                                      child: Text("No"),
                                       mini: true,
                                       onPressed: () =>
-                                          Navigator.of(context).pop())
+                                          Navigator.of(context).pop(),
+                                      child: const Text("No"))
                                 ]);
                           }
                         },
@@ -318,7 +318,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                   ),
                   const SizedBox(height: 50),
                   Card(
-                    color: Theme.of(context).backgroundColor.withOpacity(1),
+                    color: Theme.of(context).focusColor.withOpacity(1),
                     shadowColor: Colors.black,
                     surfaceTintColor: Colors.white,
                     elevation: 20,
@@ -353,7 +353,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                     child: DropdownButton(
                                       isExpanded: true,
                                       isDense: false,
-                                      underline: SizedBox(),
+                                      underline: const SizedBox(),
                                       icon: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Icon(
@@ -428,7 +428,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                   ),
                   const SizedBox(height: 10),
                   Card(
-                    color: Theme.of(context).backgroundColor.withOpacity(1),
+                    color: Theme.of(context).focusColor.withOpacity(1),
                     shadowColor: Colors.black,
                     surfaceTintColor: Colors.white,
                     elevation: 20,
@@ -582,9 +582,9 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Card(
-                    color: Theme.of(context).backgroundColor.withOpacity(1),
+                    color: Theme.of(context).focusColor.withOpacity(1),
                     shadowColor: Colors.black,
                     surfaceTintColor: Colors.white,
                     elevation: 20,
@@ -619,7 +619,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                     child: DropdownButton(
                                       isExpanded: true,
                                       isDense: false,
-                                      underline: SizedBox(),
+                                      underline: const SizedBox(),
                                       icon: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Icon(
@@ -659,7 +659,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                 ],
                               ),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(
                               "CLASS ADVISOR",
                               style: TextStyle(
@@ -681,7 +681,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                     child: DropdownButton(
                                       isExpanded: true,
                                       isDense: false,
-                                      underline: SizedBox(),
+                                      underline: const SizedBox(),
                                       icon: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Icon(
@@ -721,7 +721,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                 ],
                               ),
                             ),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             Text(
                               "HEAD OF DEPARTMENT",
                               style: TextStyle(
@@ -744,7 +744,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                                       isExpanded: true,
                                       elevation: 0,
                                       isDense: false,
-                                      underline: SizedBox(),
+                                      underline: const SizedBox(),
                                       icon: Padding(
                                         padding: const EdgeInsets.all(10.0),
                                         child: Icon(
@@ -793,7 +793,7 @@ class _leaveFormApplyState extends State<leaveFormApply> {
                     height: 10,
                   ),
                   Card(
-                    color: Theme.of(context).backgroundColor.withOpacity(1),
+                    color: Theme.of(context).focusColor.withOpacity(1),
                     shadowColor: Colors.black,
                     surfaceTintColor: Colors.white,
                     elevation: 20,

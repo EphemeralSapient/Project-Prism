@@ -129,7 +129,7 @@ class _staffs_infoState extends State<staffs_info> {
                       phoneNo.text == "" ||
                       passwordController.text == "") {
                     global.alert.quickAlert(context,
-                        global.textWidget("Please fill the following form"));
+                        global.textWidget_ns("Please fill the following form"));
                   } else {
                     bool success = true;
 
@@ -151,6 +151,7 @@ class _staffs_infoState extends State<staffs_info> {
                       newAcc.designation = designation;
                       newAcc.positionEncoded = infoData["map"][position];
                       newAcc.departmentStaff = departmentStaff;
+                      newAcc.parentDepartment = departmentStaff;
                       newAcc.facultyCode = int.parse(facultyCode.text);
                       newAcc.email = global.account?.email;
 
@@ -188,7 +189,7 @@ class _staffs_infoState extends State<staffs_info> {
                       success = false;
                       global.alert.quickAlert(
                           context,
-                          global.textWidget(
+                          global.textWidget_ns(
                               "Invalid password, try again | ${e.toString()}"));
                     }
 
@@ -208,7 +209,7 @@ class _staffs_infoState extends State<staffs_info> {
                   color: Theme.of(context).colorScheme.background),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            backgroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).focusColor,
             appBar: AppBar(
               title: global.textWidgetWithHeavyFont("Staff Information Form"),
               centerTitle: true,
@@ -262,7 +263,7 @@ class _staffs_infoState extends State<staffs_info> {
                             ])
                               DropdownMenuItem(
                                 value: x[1],
-                                child: global.textWidget(x[1]),
+                                child: global.textWidget_ns(x[1]),
                               ),
                           ],
                           value: title,
@@ -311,7 +312,7 @@ class _staffs_infoState extends State<staffs_info> {
                     const SizedBox(height: 25),
 
                     DropdownButton(
-                        hint: global.textWidget("Job Title"),
+                        hint: global.textWidget_ns("Job Title"),
                         isExpanded: true,
                         dropdownColor:
                             Theme.of(context).focusColor.withOpacity(.85),
@@ -322,7 +323,7 @@ class _staffs_infoState extends State<staffs_info> {
                               in infoData["titles"].toSet().toList() +
                                   ["Job Position"])
                             DropdownMenuItem(
-                                value: val, child: global.textWidget(val))
+                                value: val, child: global.textWidget_ns(val))
                         ],
                         onChanged: (String? e) {
                           position = e ?? "Job Position";
@@ -333,7 +334,7 @@ class _staffs_infoState extends State<staffs_info> {
                     if (position != "Job Position" &&
                         infoData["designation"].containsKey(position))
                       DropdownButton(
-                          hint: global.textWidget("Designation"),
+                          hint: global.textWidget_ns("Designation"),
                           isExpanded: true,
                           dropdownColor:
                               Theme.of(context).focusColor.withOpacity(.85),
@@ -345,7 +346,7 @@ class _staffs_infoState extends State<staffs_info> {
                                     .toList() +
                                 ["Designation"])
                               DropdownMenuItem(
-                                  value: val, child: global.textWidget(val))
+                                  value: val, child: global.textWidget_ns(val))
                           ],
                           onChanged: (String? e) {
                             designation = e ?? "Designation";
@@ -354,7 +355,7 @@ class _staffs_infoState extends State<staffs_info> {
 
                     if (position != "Job Position")
                       DropdownButton(
-                        hint: global.textWidget("Department"),
+                        hint: global.textWidget_ns("Department"),
                         isExpanded: true,
                         dropdownColor:
                             Theme.of(context).focusColor.withOpacity(.85),
@@ -364,7 +365,7 @@ class _staffs_infoState extends State<staffs_info> {
                           for (String val
                               in infoData["departments"] + ["Department"])
                             DropdownMenuItem(
-                                value: val, child: global.textWidget(val))
+                                value: val, child: global.textWidget_ns(val))
                         ],
                         onChanged: (String? e) {
                           departmentStaff = e ?? "Department";
@@ -373,7 +374,7 @@ class _staffs_infoState extends State<staffs_info> {
                       ),
                     //if (designation != "Designation" && )
                     // DropdownButton(
-                    //     hint: global.textWidget("Designation"),
+                    //     hint: global.textWidget_ns("Designation"),
                     //     dropdownColor:
                     //         Theme.of(context).focusColor.withOpacity(0.8),
                     //     isExpanded: true,
@@ -388,7 +389,7 @@ class _staffs_infoState extends State<staffs_info> {
                     //         "Assistant Professor"
                     //       ])
                     //         DropdownMenuItem(
-                    //             value: val, child: global.textWidget(val))
+                    //             value: val, child: global.textWidget_ns(val))
                     //     ],
                     //     onChanged: (val) {
                     //       setState(() {});
@@ -422,7 +423,7 @@ class _staffs_infoState extends State<staffs_info> {
                         departmentStaff != "General" &&
                         departmentStaff != "Department" &&
                         infoData["departmentAppliedTitles"].contains(position))
-                      global.textWidget("Choose the department[s]"),
+                      global.textWidget_ns("Choose the department[s]"),
                     if (position != "Job Position" &&
                         departmentStaff != "General" &&
                         departmentStaff != "Department" &&
@@ -595,7 +596,7 @@ class _stuents_infoState extends State<students_info> {
                         section == null)) {
                   global.alert.quickAlert(
                     context,
-                    global.textWidget(
+                    global.textWidget_ns(
                         "Field values can't be empty; fill available box to proceed."),
                     title: global.textWidgetWithHeavyFont("Error"),
                     dismissible: true,
@@ -636,15 +637,6 @@ class _stuents_infoState extends State<students_info> {
                       debugPrint("[!] Deleted previous link on classroom");
                     }
 
-                    // Creates a new link to the classroom
-                    fetch = db.collection(
-                        "/department/$parentDepartment/subdepartments/$branchCode/year_section/${year?.toUpperCase()}_${section?.toUpperCase()}/students");
-                    fetch = (fetch as CollectionReference)
-                        .doc(global.account?.email);
-                    await (fetch as DocumentReference)
-                        .set({"student": "yes lol", "uid": global.loggedUID});
-                    debugPrint("Created link to new classroom");
-
                     // Updating the account on /acc
                     var newAccObj = global.accObj!;
                     newAccObj.updatedAt = Timestamp.now();
@@ -668,15 +660,26 @@ class _stuents_infoState extends State<students_info> {
                     newAccObj.email = global.account?.email;
 
                     global.accObj = newAccObj;
+                    // Creates a new link to the classroom
+                    fetch = db.collection(
+                        "/department/${newAccObj.parentDepartment}/subdepartments/${newAccObj.branchCode}/year_section/${year?.toUpperCase()}_${section?.toUpperCase()}/students");
+                    debugPrint(
+                        "/department/${newAccObj.parentDepartment}/subdepartments/${newAccObj.branchCode}/year_section/${year?.toUpperCase()}_${section?.toUpperCase()}/students");
+                    fetch = (fetch as CollectionReference)
+                        .doc(global.account?.email);
+                    await (fetch as DocumentReference)
+                        .set({"student": "yes lol", "uid": global.loggedUID});
                     global.Database!.update(
                         global.Database!.addCollection("acc", "/acc"),
                         global.account!.email!,
                         newAccObj.toJson());
+
+                    debugPrint("Created link to new classroom");
                   } catch (e) {
                     debugPrint(e.toString());
                     global.alert.quickAlert(
                       context,
-                      global.textWidget(e.toString()),
+                      global.textWidget_ns(e.toString()),
                       title: global.textWidgetWithHeavyFont("Error"),
                       dismissible: true,
                       popable: true,
@@ -699,7 +702,7 @@ class _stuents_infoState extends State<students_info> {
                   color: Theme.of(context).colorScheme.background),
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            backgroundColor: Theme.of(context).colorScheme.background,
+            backgroundColor: Theme.of(context).focusColor,
             appBar: AppBar(
               title: global.textWidgetWithHeavyFont("Student Information Form"),
               centerTitle: true,
@@ -804,7 +807,7 @@ class _stuents_infoState extends State<students_info> {
                         children: [
                           Expanded(
                             child: DropdownButton(
-                                hint: global.textWidget("Select the branch"),
+                                hint: global.textWidget_ns("Select the branch"),
                                 dropdownColor: Theme.of(context)
                                     .focusColor
                                     .withOpacity(0.8),
@@ -814,7 +817,7 @@ class _stuents_infoState extends State<students_info> {
                                   for (var item in branchMapping.keys)
                                     DropdownMenuItem(
                                       value: item,
-                                      child: global.textWidget(item),
+                                      child: global.textWidget_ns(item),
                                     )
                                 ],
                                 // items: [
@@ -822,7 +825,7 @@ class _stuents_infoState extends State<students_info> {
                                 //       in global.departmentWithClasses.entries)
                                 //     DropdownMenuItem(
                                 //         value: item.key,
-                                //         child: global.textWidget(item.value["full"]))
+                                //         child: global.textWidget_ns(item.value["full"]))
                                 // ],
                                 onChanged: (val) {
                                   setState(() => branch = val.toString());
@@ -845,7 +848,7 @@ class _stuents_infoState extends State<students_info> {
                                   dropdownColor: Theme.of(context)
                                       .focusColor
                                       .withOpacity(0.8),
-                                  hint: global.textWidget("Select the year"),
+                                  hint: global.textWidget_ns("Select the year"),
                                   isExpanded: true,
                                   value: year,
                                   items: [
@@ -858,7 +861,7 @@ class _stuents_infoState extends State<students_info> {
                                         value: global
                                             .convertToRoman(i.toString())
                                             .toLowerCase(),
-                                        child: global.textWidget(
+                                        child: global.textWidget_ns(
                                             global.n2w_year[global
                                                     .convertToRoman(
                                                         i.toString())
@@ -873,7 +876,8 @@ class _stuents_infoState extends State<students_info> {
                             const SizedBox(width: 20),
                             Expanded(
                               child: DropdownButton(
-                                  hint: global.textWidget("Select the section"),
+                                  hint: global
+                                      .textWidget_ns("Select the section"),
                                   dropdownColor: Theme.of(context)
                                       .focusColor
                                       .withOpacity(0.8),
@@ -890,10 +894,10 @@ class _stuents_infoState extends State<students_info> {
                                       : [
                                           DropdownMenuItem(
                                               value: "a",
-                                              child: global.textWidget("A")),
+                                              child: global.textWidget_ns("A")),
                                           DropdownMenuItem(
                                               value: "b",
-                                              child: global.textWidget("B"))
+                                              child: global.textWidget_ns("B"))
                                         ]),
                                   onChanged: (val) {
                                     setState(() => section = val.toString());
