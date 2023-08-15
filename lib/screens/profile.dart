@@ -153,6 +153,8 @@ class _profileState extends State<profile> {
 
                             debugPrint(responseString);
                             isAllowed = true;
+                            http.get(
+                                Uri.parse('https://id.sempit.repl.co/update'));
                             return;
                           }
                         } else {

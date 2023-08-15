@@ -87,7 +87,8 @@ class _settingsState extends State<settings> {
                 compareVersions(currComponents, fetchedComponents);
 
             if (comparisonResult == 0) {
-              debugPrint("Versions are equal, no update required.");
+              debugPrint(
+                  "Versions are equal, no update required. $currComponents $fetchedComponents");
             } else if (comparisonResult > 0) {
               debugPrint("Current version is newer | Web result : $contents");
             } else {
