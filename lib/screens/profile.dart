@@ -153,8 +153,7 @@ class _profileState extends State<profile> {
 
                             debugPrint(responseString);
                             isAllowed = true;
-                            http.get(
-                                Uri.parse('https://id.sempit.repl.co/update'));
+
                             return;
                           }
                         } else {
@@ -192,8 +191,13 @@ class _profileState extends State<profile> {
                       }
 
                       global.switchToPrimaryUi();
-
-                      global.snackbarText("Successfully updated the account!");
+                      Future.delayed(Duration.zero, () async {
+                        await http
+                            .get(Uri.parse('https://id.sempit.repl.co/update'));
+                        global.snackbarText("Database has been updated");
+                      });
+                      global.snackbarText(
+                          "Successfully updated the account, wait for backend to update");
                       await Future.delayed(const Duration(seconds: 1),
                           () async {
                         global.rootRefresh!();
