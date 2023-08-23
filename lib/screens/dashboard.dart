@@ -14,6 +14,7 @@ import 'package:Project_Prism/ui/course/info.dart';
 import 'package:Project_Prism/ui/course/remove.dart';
 import 'package:Project_Prism/ui/course/update.dart';
 import 'package:Project_Prism/ui/face_detection.dart';
+import 'package:Project_Prism/ui/timetable_modify.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
@@ -242,7 +243,7 @@ List<List<Object>> names = [
         "Book or Modify The Hall",
         () {
           Navigator.pop(global.rootCTX!);
-          global.switchToSecondaryUi(hallInfoUi());
+          global.switchToSecondaryUi(const hallInfoUi());
         },
         List.generate(10, (index) => index + 9)
       ],
@@ -266,24 +267,27 @@ List<List<Object>> names = [
       [
         Icons.timelapse,
         "Change the timetable timing",
-        () {},
-        List.generate(10, (index) => index + 11)
+        () {
+          Navigator.pop(global.rootCTX!);
+          global.switchToSecondaryUi(const TimetableModify());
+        },
+        List.generate(10, (index) => index + 10)
       ],
       [
         Icons.calendar_month,
         "Change month schedule days",
         () {},
-        List.generate(10, (index) => index + 14)
+        List.generate(10, (index) => index + 10)
       ],
       [
         Icons.update,
         "Change bus schedule and information",
         () {},
-        List.generate(10, (index) => index + 14) + [3]
+        List.generate(10, (index) => index + 10) + [3]
       ],
     ],
-    [3],
-    List.generate(10, (index) => index + 11) + [3]
+    [1, 2],
+    List.generate(10, (index) => index + 9) + [3]
   ],
   [
     "Bus",
