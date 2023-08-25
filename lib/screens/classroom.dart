@@ -17,6 +17,18 @@ import 'package:semicircle_indicator/semicircle_indicator.dart';
 
 dynamic data;
 List<String> depart = ["All"];
+List<String> programmes = [];
+List<String> selectedProgramme = [];
+List<String> years = ["I", "II", "III", "IV"];
+List<String> selectedYear = [];
+
+List<dynamic> selectedClasses = [];
+
+Map<String, String> selectedClass = {
+  "class": "CSE",
+  "year": "I",
+  "section": "A",
+};
 
 class classroom extends StatefulWidget {
   const classroom({super.key});
@@ -63,6 +75,17 @@ class _classroomState extends State<classroom> {
         classAbsentCount = data["absent"] ?? 0;
         classOnDutyCount = data["onDuty"] ?? 0;
       } else {
+        var fetch = await global.Database!.firestore
+            .collection(
+                "/department/${global.accObj!.parentDepartment}/subdepartments/")
+            .get();
+        if (programmes.isEmpty) {
+          for (var x in fetch.docs) {
+            programmes.add(x.id);
+          }
+          setState(() {});
+        }
+
         CollectionReference collectionRef =
             global.Database!.addCollection("classroom", "/class");
         QuerySnapshot querySnapshot = await collectionRef.get();
@@ -85,7 +108,8 @@ class _classroomState extends State<classroom> {
       }
     }
 
-    var todayDate = DateFormat("dd-MM-yyyy").format(DateTime.now()).toString();
+    var chosenDateStr =
+        DateFormat("dd-MM-yyyy").format(DateTime.now()).toString();
 
     String per(int? strength, int? count) {
       if (strength == null || count == null) {
@@ -129,7 +153,7 @@ class _classroomState extends State<classroom> {
                           children: [
                             global.padHeight(20),
                             global.textWidget(
-                                "This UI is subjected to overhaul and will be done sooner as possible."),
+                                "This UI is subjected to overhaul and will be done sooner as possible. | ${global.accObj!.branchCode ?? "NONE"}"),
                             global.padHeight(10),
                             Card(
                               color:
@@ -162,7 +186,16 @@ class _classroomState extends State<classroom> {
                                       context,
                                       PageRouteBuilder(
                                           pageBuilder: (c, a1, a2) =>
-                                              const attendanceChecklist(),
+                                              attendanceChecklist(
+                                                  year: global.accObj!.year!
+                                                      .toUpperCase(),
+                                                  section: global
+                                                          .accObj!.section!
+                                                          .toUpperCase() ??
+                                                      "A",
+                                                  programme: global
+                                                          .accObj!.branchCode ??
+                                                      ""),
                                           opaque: false,
                                           transitionsBuilder: (context,
                                                   animation,
@@ -228,7 +261,15 @@ class _classroomState extends State<classroom> {
                                       context,
                                       PageRouteBuilder(
                                           pageBuilder: (c, a1, a2) =>
-                                              const attendanceChecklist(),
+                                              attendanceChecklist(
+                                                  year: global.convertToRoman(
+                                                      global.accObj!.year),
+                                                  section:
+                                                      global.accObj!.section ??
+                                                          "A",
+                                                  programme: global
+                                                          .accObj!.programme ??
+                                                      ""),
                                           opaque: false,
                                           transitionsBuilder: (context,
                                                   animation,
@@ -493,7 +534,7 @@ class _classroomState extends State<classroom> {
                                                                 const EdgeInsets
                                                                     .all(8.0),
                                                             child: global
-                                                                .textWidget(
+                                                                .textWidget_ns(
                                                                     "Attendance"),
                                                           ),
                                                           Padding(
@@ -601,63 +642,204 @@ class _classroomState extends State<classroom> {
                   children: [
                     global.textWidget(
                         "This UI is subjected to overhaul and will be done sooner as possible."),
-                    ChoiceChip(
-                      disabledColor:
-                          Theme.of(context).focusColor.withOpacity(0.6),
-                      surfaceTintColor: Colors.transparent,
-                      selectedShadowColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      backgroundColor:
-                          Theme.of(context).focusColor.withOpacity(0.6),
-                      selectedColor:
-                          Theme.of(context).focusColor.withOpacity(0.6),
-                      label:
-                          global.textWidget("Department : ${depart.join(",")}"),
-                      onSelected: (value) {
-                        global.alert.quickAlert(context, const SizedBox(),
-                            bodyFn: () {
-                          return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                for (String x in departments)
-                                  InkWell(
-                                    onTap: () {
-                                      global.quickAlertGlobalVar(() {
-                                        if (!depart.contains(x)) {
-                                          depart.add(x);
-                                        } else {
-                                          depart.remove(x);
-                                        }
-                                      });
-                                    },
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      children: [
-                                        global.textWidgetWithHeavyFont(x),
-                                        Checkbox(
-                                          value: depart.contains(x),
-                                          onChanged: (bool? val) {
-                                            global.quickAlertGlobalVar(() {
-                                              if (!depart.contains(x)) {
-                                                depart.add(x);
-                                              } else {
-                                                depart.remove(x);
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            selectedClasses.clear();
+                            selectedProgramme.clear();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.school, color: Colors.white),
+                          label: const Text(
+                            "Programme",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .focusColor
+                                .withOpacity(
+                                    0.2), // Customize the background color
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: ShaderMask(
+                            shaderCallback: (Rect rect) {
+                              return const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.grey,
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  Colors.black
+                                ],
+                                stops: [0.001, 0.05, 0.8, 1.0],
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.dstOut,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  for (String name in programmes)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 3.0, right: 3.0),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          if (selectedProgramme
+                                                  .contains(name) ==
+                                              false) {
+                                            for (var x in (await global
+                                                    .Database!.firestore
+                                                    .collection(
+                                                        "/department/${global.accObj!.parentDepartment}/subdepartments/$name/year_section")
+                                                    .get())
+                                                .docs) {
+                                              var data = x.data();
+                                              data["programme"] = name;
+                                              data["_year"] = global
+                                                  .convertToRoman(data["year"]);
+                                              if (selectedYear.contains(
+                                                  global.convertToRoman(
+                                                      data["year"]))) {
+                                                selectedClasses.add(data);
                                               }
-                                            });
-                                          },
-                                        )
-                                      ],
+                                            }
+                                            selectedProgramme.add(name);
+                                          } else {
+                                            var repo = selectedClasses.toList();
+                                            for (var x in repo) {
+                                              if (x["programme"] == name) {
+                                                selectedClasses.remove(x);
+                                              }
+                                            }
+                                            selectedProgramme.remove(name);
+                                          }
+                                          setState(() {});
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context)
+                                              .focusColor
+                                              .withOpacity(selectedProgramme
+                                                          .contains(name) ==
+                                                      false
+                                                  ? 0.8
+                                                  : 0.2),
+                                        ),
+                                        child: global.textWidget_ns(name),
+                                      ),
                                     ),
-                                  ),
-                              ]);
-                        }, popFn: () {
-                          setState(() {
-                            //depart = changeDepart;
-                          });
-                        }, opacity: 0.5);
-                      },
-                      selected: false,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            selectedClasses.clear();
+                            selectedYear.clear();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.layers, color: Colors.white),
+                          label: const Text(
+                            "Year",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .focusColor
+                                .withOpacity(
+                                    0.2), // Customize the background color
+                          ),
+                        ),
+                        const SizedBox(width: 20),
+                        Expanded(
+                          child: ShaderMask(
+                            shaderCallback: (Rect rect) {
+                              return const LinearGradient(
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
+                                colors: [
+                                  Colors.grey,
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  Colors.black
+                                ],
+                                stops: [0.001, 0.05, 0.8, 1.0],
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.dstOut,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  for (String name in years)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 3.0, right: 3.0),
+                                      child: ElevatedButton(
+                                        onPressed: () async {
+                                          if (selectedYear.contains(name) ==
+                                              false) {
+                                            for (var prog
+                                                in selectedProgramme) {
+                                              for (var x in (await global
+                                                      .Database!.firestore
+                                                      .collection(
+                                                          "/department/${global.accObj!.parentDepartment}/subdepartments/$prog/year_section")
+                                                      .get())
+                                                  .docs) {
+                                                var data = x.data();
+                                                if (global.convertToRoman(
+                                                        data["year"]) ==
+                                                    name) {
+                                                  data["_year"] = name;
+                                                  data["programme"] = prog;
+                                                  selectedClasses.add(data);
+                                                }
+                                              }
+                                            }
+                                            selectedYear.add(name);
+                                          } else {
+                                            var repo = selectedClasses.toList();
+                                            for (var x in repo) {
+                                              if (x["_year"] == name) {
+                                                selectedClasses.remove(x);
+                                              }
+                                            }
+                                            selectedYear.remove(name);
+                                          }
+                                          setState(() {});
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Theme.of(context)
+                                              .focusColor
+                                              .withOpacity(
+                                                  selectedYear.contains(name) ==
+                                                          false
+                                                      ? 0.8
+                                                      : 0.2),
+                                        ),
+                                        child: global.textWidget_ns(name),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(
                       height: 25,
@@ -674,72 +856,84 @@ class _classroomState extends State<classroom> {
                               ),
                             ),
                             children: [
-                              for (var x in allClassInfo)
-                                if (x["department"] != null &&
-                                    (depart.contains("All") ||
-                                        depart.contains(x["department"])))
-                                  Card(
-                                    shadowColor: Colors.transparent,
-                                    surfaceTintColor: Colors.transparent,
-                                    clipBehavior: Clip.antiAlias,
-                                    color: Theme.of(context)
-                                        .focusColor
-                                        .withOpacity(0.8),
-                                    child: InkWell(
-                                      onTap: () {
-                                        data = x;
-                                        global.switchToSecondaryUi(
-                                            const classInfoUI());
-                                      },
-                                      child: SizedBox(
-                                        height: 175,
-                                        width: double.infinity,
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(15.0),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                              for (var x in selectedClasses)
+                                Card(
+                                  shadowColor: Colors.transparent,
+                                  surfaceTintColor: Colors.transparent,
+                                  clipBehavior: Clip.antiAlias,
+                                  color: Theme.of(context)
+                                      .focusColor
+                                      .withOpacity(0.8),
+                                  child: InkWell(
+                                    onTap: () {
+                                      data = x;
+                                      global.switchToSecondaryUi(
+                                          const classInfoUI());
+                                    },
+                                    child: Container(
+                                      height: 50, // Reduced height
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(
+                                          10.0), // Reduced padding
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Theme.of(context).focusColor,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
                                             children: [
-                                              global.textWidgetWithHeavyFont(
-                                                  "${x["year"].toString().toUpperCase()}  ${x["department"].toString().toUpperCase()}-${x["section"].toString().toUpperCase()}"),
-
-                                              const SizedBox(
-                                                height: 20,
+                                              const SizedBox(width: 5),
+                                              global.textWidget_ns(
+                                                "${x["_year"].toString().toUpperCase()} ${x["programme"]}-${x["section"].toString().toUpperCase()}",
                                               ),
-
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceAround,
-                                                children: [
-                                                  global.textDoubleSpanWiget(
-                                                      "Absentees Count : ",
-                                                      "${x["absentUpdate"] != null && x["absentUpdate"][todayDate] != null ? x["absentUpdate"][todayDate].toString() : "-"} | ${per((x["endRoll"] ?? 61) - (x["startRoll"] ?? 1), x["absentUpdate"] != null && x["absentUpdate"][todayDate] != null ? x["absentUpdate"][todayDate] : null)}%"),
-                                                  global.textDoubleSpanWiget(
-                                                      "On Duty Count : ",
-                                                      "${x["onDutyUpdate"] != null && x["onDutyUpdate"][todayDate] != null ? x["onDutyUpdate"][todayDate].toString() : "-"} | ${per((x["endRoll"] ?? 61) - (x["startRoll"] ?? 1), x["onDutyUpdate"] != null && x["onDutyUpdate"][todayDate] != null ? x["onDutyUpdate"][todayDate] : null)}%"),
-                                                ],
-                                              ),
-                                              global.padHeight(15),
-                                              global.textDoubleSpanWiget(
-                                                  "Total Strength : ",
-                                                  x["endRoll"] != null &&
-                                                          x["startRoll"] != null
-                                                      ? (x["endRoll"] -
-                                                              x["startRoll"])
-                                                          .toString()
-                                                      : "Not configured"),
-                                              //global.textDoubleSpanWiget("Current on going class : ", "Not Implemented"),
-                                              //global.padHeight(),
-                                              //global.textDoubleSpanWiget("Class faculty : ", "null")
                                             ],
                                           ),
-                                        ),
+                                          Row(
+                                            children: [
+                                              const Icon(Icons.person,
+                                                  color: Colors.green,
+                                                  size: 16),
+                                              const SizedBox(width: 5),
+                                              global.textWidget_ns(
+                                                x["date"] != null &&
+                                                        x["date"] ==
+                                                            chosenDateStr
+                                                    ? x["absent"].toString()
+                                                    : "-",
+                                              ),
+                                              const SizedBox(
+                                                  width:
+                                                      10), // Adjusted spacing
+                                              const Icon(Icons.access_time,
+                                                  color: Colors.orange,
+                                                  size: 16),
+                                              const SizedBox(width: 5),
+                                              global.textWidget_ns(
+                                                x["date"] != null &&
+                                                        x["date"] ==
+                                                            chosenDateStr
+                                                    ? x["onDuty"].toString()
+                                                    : "-",
+                                              ),
+                                              const SizedBox(
+                                                  width:
+                                                      10), // Adjusted spacing
+                                              const Icon(Icons.people_alt,
+                                                  color: Colors.blue, size: 16),
+                                              const SizedBox(width: 5),
+                                              global.textWidget_ns(
+                                                "Total: ${x["endRoll"] != null && x["startRoll"] != null ? (x["endRoll"] - x["startRoll"]).toString() : "NA"}",
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  )
+                                  ),
+                                )
                             ],
                           ) // Stagged animation
                           ),
@@ -780,7 +974,7 @@ class classInfoUI extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               global.textWidgetWithHeavyFont(
-                  "${x["year"].toString().toUpperCase()}  ${x["department"].toString().toUpperCase()}-${x["section"].toString().toUpperCase()}"),
+                  "${x["_year"].toString().toUpperCase()}  ${x["programme"].toString().toUpperCase()}-${x["section"].toString().toUpperCase()}"),
               const SizedBox(height: 40),
               Card(
                   shadowColor: Colors.transparent,
@@ -793,8 +987,10 @@ class classInfoUI extends StatelessWidget {
                         Navigator.push(
                             context,
                             PageRouteBuilder(
-                                pageBuilder: (c, a1, a2) =>
-                                    const attendanceChecklist(),
+                                pageBuilder: (c, a1, a2) => attendanceChecklist(
+                                    year: x["_year"],
+                                    programme: x["programme"],
+                                    section: x["section"]),
                                 opaque: false,
                                 transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) =>
@@ -852,8 +1048,10 @@ class classInfoUI extends StatelessWidget {
                         Navigator.push(
                             context,
                             PageRouteBuilder(
-                                pageBuilder: (c, a1, a2) =>
-                                    const timeTableEditUi(),
+                                pageBuilder: (c, a1, a2) => timeTableEditUi(
+                                    year: x["_year"],
+                                    section: x["section"],
+                                    programme: x["programme"]),
                                 opaque: false,
                                 transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) =>
@@ -911,7 +1109,10 @@ class classInfoUI extends StatelessWidget {
                         Navigator.push(
                             context,
                             PageRouteBuilder(
-                                pageBuilder: (c, a1, a2) => classInfoEditUi(),
+                                pageBuilder: (c, a1, a2) => classInfoEditUi(
+                                    year: x["_year"],
+                                    section: x["section"],
+                                    programme: x["programme"]),
                                 opaque: false,
                                 transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) =>
@@ -969,7 +1170,14 @@ class classInfoUI extends StatelessWidget {
 }
 
 class attendanceChecklist extends StatefulWidget {
-  const attendanceChecklist({super.key});
+  final String section;
+  final String year;
+  final String programme;
+  const attendanceChecklist(
+      {super.key,
+      required this.section,
+      required this.year,
+      required this.programme});
 
   @override
   State<attendanceChecklist> createState() => _attendanceChecklistState();
@@ -1007,17 +1215,18 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
     chosenDateStr = DateFormat("dd-MM-yyyy").format(chosenDay).toString();
     super.initState();
     debugPrint("Loading Attendance for $chosenDateStr");
-    debugPrint("aeae ${data.toString()}");
     Future.delayed(const Duration(), () async {
       loaded = false;
       try {
         var leaveDatas = await global.Database!.get(
-            global.Database!.addCollection("attendance", "/attendance"),
-            "$chosenDateStr ${data["classCode"]}");
+            global.Database!.firestore.collection(
+                "/department/${global.accObj!.parentDepartment}/subdepartments/${widget.programme}/year_section/${widget.year}_${widget.section}/attendance"),
+            chosenDateStr);
 
         // If empty leave as it is, or else update the data
         if (leaveDatas.status == db_fetch_status.nodata) {
           sheetEmpty = true;
+          debugPrint("data is empty for given class");
         } else {
           var leaveData = {};
           for (var x in (leaveDatas.data as Map).entries) {
@@ -1130,15 +1339,16 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
 
                 if (sheetEmpty == true) {
                   final get = await global.Database!.create(
-                      global.collectionMap["attendance"]!,
-                      "$chosenDateStr ${data["classCode"]}", {
-                    "classCode": data["classCode"],
-                    "absent": [absent],
-                    "onDuty": [onDuty],
-                    "checkedBy": [
-                      "${global.accObj!.title} ${global.accObj!.firstName} ${global.accObj!.lastName}"
-                    ],
-                  });
+                      global.Database!.firestore.collection(
+                          "/department/${global.accObj!.parentDepartment}/subdepartments/${widget.programme}/year_section/${widget.year}_${widget.section}/attendance"),
+                      chosenDateStr,
+                      {
+                        "absent": [absent],
+                        "onDuty": [onDuty],
+                        "checkedBy": [
+                          "${global.accObj!.title} ${global.accObj!.firstName} ${global.accObj!.lastName}"
+                        ],
+                      });
 
                   if (get.status != db_fetch_status.success) {
                     global.snackbarText(
@@ -1154,8 +1364,9 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                       "${global.accObj!.title} ${global.accObj!.firstName} ${global.accObj!.lastName}");
 
                   final get = await global.Database!.update(
-                      global.collectionMap["attendance"]!,
-                      "$chosenDateStr ${data["classCode"]}",
+                      global.Database!.firestore.collection(
+                          "/department/${global.accObj!.parentDepartment}/subdepartments/${widget.programme}/year_section/${widget.year}_${widget.section}/attendance"),
+                      chosenDateStr,
                       global.convertDynamicToMap(fetchedData));
 
                   if (get.status != db_fetch_status.success) {
@@ -1168,9 +1379,16 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                 }
 
                 if (success) {
-                  data["absentUpdate"] = {chosenDateStr: absent.length};
-                  data["onDutyUpdate"] = {chosenDateStr: onDuty.length};
+                  data = (await global.Database!.firestore
+                          .collection(
+                              "/department/${global.accObj!.parentDepartment}/subdepartments/${widget.programme}/year_section/")
+                          .doc("${widget.year}_${widget.section}")
+                          .get())
+                      .data();
+                  // data["absentUpdate"] = {chosenDateStr: absent.length};
+                  // data["onDutyUpdate"] = {chosenDateStr: onDuty.length};
                   data["absents"] = absents;
+                  data["date"] = chosenDateStr;
                   data["onDuties"] = onDuties;
                   data["absent"] = data["absent"] == null
                       ? absent.length
@@ -1179,8 +1397,9 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
                       ? onDuty.length
                       : (data["onDuty"] + (onDuty.length - prevOnDuty.length));
                   await global.Database!.update(
-                      global.Database!.addCollection("class", "/class"),
-                      data["classCode"],
+                      global.Database!.firestore.collection(
+                          "/department/${global.accObj!.parentDepartment}/subdepartments/${widget.programme}/year_section/"),
+                      "${widget.year}_${widget.section}",
                       data);
                 }
               },
@@ -1555,7 +1774,14 @@ class _attendanceChecklistState extends State<attendanceChecklist> {
 }
 
 class timeTableEditUi extends StatefulWidget {
-  const timeTableEditUi({super.key});
+  final String section;
+  final String year;
+  final String programme;
+  const timeTableEditUi(
+      {super.key,
+      required this.section,
+      required this.year,
+      required this.programme});
 
   @override
   State<timeTableEditUi> createState() => _timeTableEditUiState();
@@ -2163,7 +2389,15 @@ class classInfoEditUi extends StatelessWidget {
   TextEditingController endRoll =
       TextEditingController(text: data["endRoll"].toString());
 
-  classInfoEditUi({super.key});
+  final String section;
+  final String year;
+  final String programme;
+  classInfoEditUi(
+      {super.key,
+      required this.section,
+      required this.year,
+      required this.programme});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2193,14 +2427,20 @@ class classInfoEditUi extends StatelessWidget {
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
             Navigator.pop(context);
-
+            data = (await global.Database!.firestore
+                    .collection(
+                        "/department/${global.accObj!.parentDepartment}/subdepartments/$programme/year_section/")
+                    .doc("${year}_$section")
+                    .get())
+                .data();
             data["startRoll"] = int.parse(startRoll.text);
             data["endRoll"] = int.parse(endRoll.text);
 
             debugPrint(data.toString());
             final get = await global.Database!.update(
-                global.Database!.addCollection("class", "/class"),
-                data["classCode"],
+                global.Database!.firestore.collection(
+                    "/department/${global.accObj!.parentDepartment}/subdepartments/$programme/year_section/"),
+                "${year}_$section",
                 data);
 
             ScaffoldMessenger.of(global.rootCTX!).showSnackBar(SnackBar(

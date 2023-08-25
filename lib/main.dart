@@ -1,29 +1,29 @@
+import 'dart:async' show Future;
 import 'dart:ui';
 
 import 'package:Project_Prism/intro_screen.dart';
+import 'package:Project_Prism/restartWidget.dart';
+import 'package:Project_Prism/routeToDash.dart';
+import 'package:drop_shadow/drop_shadow.dart' show DropShadow;
+import 'package:firebase_auth/firebase_auth.dart'
+    show FirebaseAuth, FirebaseAuthException, GoogleAuthProvider, User;
+import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_meedu_videoplayer/meedu_player.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'dart:async' show Future;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:Project_Prism/restartWidget.dart';
-import 'package:drop_shadow/drop_shadow.dart' show DropShadow;
-import 'package:firebase_core/firebase_core.dart' show Firebase;
-import 'package:firebase_auth/firebase_auth.dart'
-    show FirebaseAuth, FirebaseAuthException, GoogleAuthProvider, User;
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 
-import 'package:Project_Prism/routeToDash.dart';
+import 'database.dart';
 import 'firebase_options.dart' show DefaultFirebaseOptions;
 import 'global.dart' as globals;
 import 'login/options.dart' show Choice;
 // ignore: duplicate_import
 import 'routeToDash.dart';
-import 'database.dart';
 
 SharedPreferences? pref;
 int introRan = 0;
@@ -77,17 +77,18 @@ Future main() async {
                   ),
                 ),
                 children: [
-                  Icon(Icons.error_outline, color: Colors.white, size: 50),
-                  SizedBox(
+                  const Icon(Icons.error_outline,
+                      color: Colors.white, size: 50),
+                  const SizedBox(
                     height: 30,
                   ),
                   Text(
                     "Oops! An error occurred, please restart the app",
                     style: style,
                   ),
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                   Text(details.toStringShort(), style: style),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   SizedBox(
                       height: 50,
                       child: SingleChildScrollView(
@@ -132,7 +133,10 @@ class _MyAppState extends State<MyApp> {
     debugPrint(globals.darkMode.toString());
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,
         overlays: []);
-
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     if (introRan == 0) {
       Future.delayed(const Duration(seconds: 9, milliseconds: 500), () async {
         introRan = 1;
@@ -145,13 +149,11 @@ class _MyAppState extends State<MyApp> {
     //  ? MaterialApp(home: introPage())
     return MaterialApp(
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-        backgroundColor: Colors.white,
         splashColor: Colors.grey.shade100,
         shadowColor: const Color.fromARGB(132, 0, 0, 0),
         hintColor: Colors.grey.shade200,
         canvasColor: Colors.white,
-        focusColor: Color.fromARGB(127, 255, 255, 255),
+        focusColor: const Color.fromARGB(127, 255, 255, 255),
         useMaterial3: true,
         textSelectionTheme: const TextSelectionThemeData(
             selectionColor: Color.fromARGB(160, 0, 0, 0),
@@ -161,16 +163,16 @@ class _MyAppState extends State<MyApp> {
         textTheme: GoogleFonts.latoTextTheme(
           Theme.of(context).textTheme,
         ),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.deepPurple)
+            .copyWith(background: Colors.white),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
-        primarySwatch: Colors.lightBlue,
-        backgroundColor: Colors.grey.shade900,
         splashColor: Colors.grey.shade800,
         shadowColor: Colors.grey.shade300,
         hintColor: Colors.grey.shade800,
         canvasColor: Colors.grey.shade300,
-        focusColor: Color.fromARGB(158, 0, 0, 0),
+        focusColor: const Color.fromARGB(158, 0, 0, 0),
         textSelectionTheme: const TextSelectionThemeData(
             selectionColor: Color.fromARGB(192, 255, 255, 255),
             selectionHandleColor: Color.fromARGB(120, 255, 255, 255),
@@ -179,6 +181,8 @@ class _MyAppState extends State<MyApp> {
         textTheme: GoogleFonts.latoTextTheme(
           Theme.of(context).textTheme,
         ),
+        colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.lightBlue)
+            .copyWith(background: Colors.grey.shade900),
       ),
       themeMode: globals.darkMode,
       initialRoute: '/',
@@ -200,7 +204,7 @@ class _MyAppState extends State<MyApp> {
         } else if (settings.name == "/dashboard") {
           return PageRouteBuilder(
               settings: settings,
-              pageBuilder: (c, a1, a2) => ui(),
+              pageBuilder: (c, a1, a2) => const ui(),
               transitionsBuilder: (context, animation, secondaryAnimation,
                       child) =>
                   FadeTransition(
@@ -341,8 +345,9 @@ class HomeImpl extends State<home> {
         if (user.isAnonymous != true) {
           //if(globals.dashboardReached == false) debugPrint(await validate(2) ?? "Validation completed" );
           //globals.accountType = 2;
-        } else
+        } else {
           globals.accountType = 3;
+        }
         Future.delayed(const Duration(seconds: 2), () => toDashbaord());
       } else if (globals.choiceRoute != true) {
         // ignore: use_build_context_synchronously
@@ -359,7 +364,7 @@ class HomeImpl extends State<home> {
   Widget build(BuildContext context) {
     globals.rootCTX = context;
     return Scaffold(
-        backgroundColor: Theme.of(context).backgroundColor,
+        backgroundColor: Theme.of(context).colorScheme.background,
         body: Center(
             child: SizedBox(
                 width: MediaQuery.of(context).size.width / 2.5,
