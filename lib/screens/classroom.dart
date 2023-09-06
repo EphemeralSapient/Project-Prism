@@ -863,7 +863,7 @@ class _classroomState extends State<classroom> {
                                   clipBehavior: Clip.antiAlias,
                                   color: Theme.of(context)
                                       .focusColor
-                                      .withOpacity(0.8),
+                                      .withOpacity(0.2),
                                   child: InkWell(
                                     onTap: () {
                                       data = x;
