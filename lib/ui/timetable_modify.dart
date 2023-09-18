@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:Project_Prism/global.dart' as global;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:timetable/timetable.dart';
 
 class TimetableModify extends StatefulWidget {
   const TimetableModify({super.key});
@@ -156,6 +159,8 @@ class _TimetableModifyState extends State<TimetableModify> {
     );
   }
 
+  final _draggedEvents = <BasicEvent>[];
+
   Widget page2(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -189,38 +194,244 @@ class _TimetableModifyState extends State<TimetableModify> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(18.0),
-              child: TextField(
-                controller: nameController,
-                style: TextStyle(
-                    fontSize: 16.0,
-                    color: Theme.of(context).textSelectionTheme.cursorColor),
-                decoration: InputDecoration(
-                  labelText: "Schedule Name",
-                  hintText: "(e.g., Special class, Generic class)",
-                  prefixIcon: const Icon(
-                    Icons.event_note,
-                    color: Colors.blue,
-                  ),
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: BorderSide.none),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                    borderSide:
-                        const BorderSide(color: Colors.blue, width: 1.0),
-                  ),
-                  labelStyle: const TextStyle(
-                    color: Colors.blue,
-                  ),
-                  hintStyle: TextStyle(
-                    color: Theme.of(context)
-                        .textSelectionTheme
-                        .selectionHandleColor, // Hint text color
+              child: global.classicTextField(
+                "Schedule Name",
+                "(e.g., Special class, Generic class)",
+                nameController,
+                const Icon(
+                  Icons.event_note,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+
+            SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          // Controllers
+                          Map<String, dynamic> controls = {};
+
+                          for (var x in ttData["events"] ?? []) {
+                            controls[x["name"]] = [
+                              TextEditingController(text: x["name"]),
+                              x["type"],
+                              TextEditingController(text: x["duration"]),
+                            ];
+                          }
+
+                          global.alert.quickAlert(context, const Text("wut"),
+                              bodyFn: () {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (var x in controls.values ?? [])
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          height: 40,
+                                          width: 90,
+                                          child: global.classicTextField(
+                                              "Event Name",
+                                              "e.g Lunch",
+                                              x[0],
+                                              null),
+                                        ),
+                                        SizedBox(
+                                          width: 40,
+                                          child: DropdownButton(
+                                            elevation: 0,
+                                            iconSize: 0,
+                                            items: [
+                                              for (var x in [
+                                                ["Break", "Break"],
+                                                ["Class", "Class"],
+                                                ["Others", "Others"],
+                                              ])
+                                                DropdownMenuItem(
+                                                  value: x[1],
+                                                  child: global
+                                                      .textWidget_ns(x[1]),
+                                                ),
+                                            ],
+                                            value: x[1],
+                                            dropdownColor: Theme.of(context)
+                                                .focusColor
+                                                .withOpacity(0.75),
+                                            onChanged: (value) {
+                                              x[1] = value.toString();
+                                              global.quickAlertGlobalVar(() {});
+                                            },
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 40,
+                                          width: 80,
+                                          child: global.classicTextField(
+                                              "Duration", "in mins", x[2], null,
+                                              keyboardType:
+                                                  TextInputType.phone),
+                                        ),
+                                        Expanded(
+                                          child: IconButton(
+                                              onPressed: () {
+                                                controls.remove(x[0].text);
+                                                debugPrint(
+                                                    controls.keys.toString());
+                                                global
+                                                    .quickAlertGlobalVar(() {});
+                                              },
+                                              icon: const Icon(
+                                                Icons.remove_circle,
+                                                color: Colors.redAccent,
+                                              )),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ElevatedButton.icon(
+                                  icon: const Icon(
+                                    Icons.create,
+                                    color: Colors.lightBlueAccent,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(context)
+                                          .focusColor
+                                          .withOpacity(0.9)),
+                                  onPressed: () {
+                                    String eventName =
+                                        "R${Random.secure().nextInt(1000)}";
+                                    controls[eventName] = [
+                                      TextEditingController(text: eventName),
+                                      "Class",
+                                      TextEditingController(text: "30")
+                                    ];
+                                    global.quickAlertGlobalVar(() {});
+                                  },
+                                  label: global.textWidgetWithHeavyFont(
+                                      "Create new event"),
+                                )
+                              ],
+                            );
+                          }, action: [
+                            FloatingActionButton(
+                              backgroundColor: Colors.redAccent,
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Icon(Icons.cancel),
+                            ),
+                            FloatingActionButton(
+                              backgroundColor: Colors.blueAccent,
+                              onPressed: () {
+                                ttData["events"] = [
+                                  for (var x in controls.values)
+                                    {
+                                      "name": x[0].text,
+                                      "type": x[1],
+                                      "duration": x[2].text
+                                    }
+                                ];
+                                setState(() {});
+                                Navigator.pop(context);
+                              },
+                              child: const Icon(Icons.done),
+                            )
+                          ]);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 8.0, right: 8.0),
+                                child: global.textWidget_ns("Drag n' Drop "),
+                              ),
+                              const Icon(Icons.edit,
+                                  size: 20, color: Colors.blue)
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            left: 8.0, right: 8, top: 5, bottom: 5),
+                        child: Wrap(
+                          spacing: 10,
+                          // mainAxisSize: MainAxisSize.max,
+                          children: [
+                            for (var names in ttData["events"] ?? [])
+                              DraggableWidget(label: names["name"]),
+                          ],
+                        ),
+                      )
+                    ],
                   ),
                 ),
+              ),
+            ),
+
+            // Time table UI
+
+            Flexible(
+              child: TimetableConfig<BasicEvent>(
+                key: Key(DateTime.now().toIso8601String()),
+
+                timeController: TimeController(
+                    initialRange: TimeRange(
+                        const Duration(hours: 7), const Duration(hours: 20))),
+                dateController: DateController(
+                    visibleRange:
+                        VisibleDateRange.fixed(DateTimeTimetable.today(), 1)),
+                eventBuilder: (context, event) => BasicEventWidget(event),
+                timeOverlayProvider: (context, date) => <TimeOverlay>[
+                  TimeOverlay(
+                    start: const Duration(hours: 0),
+                    end: const Duration(hours: 7),
+                    widget: const ColoredBox(color: Colors.black12),
+                    position: TimeOverlayPosition
+                        .behindEvents, // the default, alternatively `inFrontOfEvents`
+                  ),
+                  TimeOverlay(
+                    start: const Duration(hours: 20),
+                    end: const Duration(hours: 24),
+                    widget: const ColoredBox(color: Colors.black12),
+                  ),
+                ],
+                // Optional:
+                // eventProvider: (date) => someListOfEvents,
+                allDayEventBuilder: (context, event, info) =>
+                    BasicAllDayEventWidget(event, info: info),
+                // allDayOverflowBuilder: (date, overflowedEvents) => /* … */,
+                callbacks: TimetableCallbacks(
+                  onDateTimeBackgroundTap: (dateTime) {
+                    debugPrint(dateTime.toString());
+                  },
+                  // onWeekTap, onDateTap, onDateBackgroundTap, onDateTimeBackgroundTap, and
+                  // onMultiDateHeaderOverflowTap
+                ),
+                theme: TimetableThemeData(
+                  context,
+                  // startOfWeek: DateTime.monday,
+                  // See the "Theming" section below for more options.
+                ),
+                child: RecurringMultiDateTimetable<BasicEvent>(),
               ),
             )
           ],
@@ -284,5 +495,63 @@ class _TimetableModifyState extends State<TimetableModify> {
               children: [page1(context), page2(context)],
             ),
           );
+  }
+}
+
+class DraggableWidget extends StatelessWidget {
+  final String label;
+  Color color =
+      Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0).withOpacity(1.0);
+
+  DraggableWidget({
+    required this.label,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Draggable(
+      data: label,
+      feedback: Material(
+        color: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10.0),
+            border: Border.all(
+              color: color,
+              width: 2.0,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Center(
+              child: global.textWidget_ns(
+                label,
+              ),
+            ),
+          ),
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(20.0),
+          border: Border.all(
+            color: color,
+            width: 2.0,
+          ),
+        ),
+        child: Padding(
+          padding:
+              const EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
+          child: Center(
+            child: global.textWidget_ns(
+              label,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -213,6 +213,44 @@ dynamic nullIfNullElseString(dynamic n) {
   return n?.toString();
 }
 
+Widget classicTextField(
+  String name,
+  String? hint,
+  TextEditingController controller,
+  Icon? prefixIcon, {
+  TextInputType? keyboardType,
+  List<TextInputFormatter>? inputFormats,
+  FlexFit fit = FlexFit.loose,
+}) {
+  return TextField(
+    controller: controller,
+    keyboardType: keyboardType,
+    style: TextStyle(
+        fontSize: 16.0,
+        color: Theme.of(rootCTX!).textSelectionTheme.cursorColor),
+    decoration: InputDecoration(
+      labelText: name,
+      hintText: hint,
+      prefixIcon: prefixIcon,
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(5.0),
+          borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15.0),
+        borderSide: const BorderSide(color: Colors.blue, width: 1.0),
+      ),
+      labelStyle: const TextStyle(
+        color: Colors.blue,
+      ),
+      hintStyle: TextStyle(
+        color: Theme.of(rootCTX!)
+            .textSelectionTheme
+            .selectionHandleColor, // Hint text color
+      ),
+    ),
+  );
+}
+
 Widget textField(String labelName,
     {int? maxLength,
     TextInputType? keyboardType,

@@ -17,6 +17,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
+import 'package:timetable/timetable.dart';
 
 import 'database.dart';
 import 'firebase_options.dart' show DefaultFirebaseOptions;
@@ -148,6 +149,10 @@ class _MyAppState extends State<MyApp> {
     //return introRan == 0
     //  ? MaterialApp(home: introPage())
     return MaterialApp(
+      localizationsDelegates: const [
+        TimetableLocalizationsDelegate(),
+        // Other delegates, e.g., `GlobalMaterialLocalizations.delegate`
+      ],
       theme: ThemeData(
         splashColor: Colors.grey.shade100,
         shadowColor: const Color.fromARGB(132, 0, 0, 0),
