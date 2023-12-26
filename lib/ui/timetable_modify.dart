@@ -18,7 +18,7 @@ class _TimetableModifyState extends State<TimetableModify> {
 
   Map<String, dynamic> ttData = {
     "name": "",
-    "timings": "",
+    "timings": [],
     "breaks": 0,
     "periods": 0,
   }; // Loaded and updated, meant for 2nd page usage.
@@ -33,6 +33,14 @@ class _TimetableModifyState extends State<TimetableModify> {
         curve: Curves.easeInOutExpo);
   }
 
+  String formatTime(DateTime dateTime) {
+    String hour = '${dateTime.hour}'.padLeft(2, '0');
+    String minute = '${dateTime.minute}'.padLeft(2, '0');
+    // String period = dateTime.hour < 12 ? 'AM' : 'PM';
+
+    return '$hour:$minute';
+  }
+
   Widget page1(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -40,7 +48,7 @@ class _TimetableModifyState extends State<TimetableModify> {
         onPressed: () async {
           ttData = {
             "name": " ",
-            "timings": "",
+            "timings": [],
             "breaks": 0,
             "periods": 0,
           };
@@ -121,6 +129,7 @@ class _TimetableModifyState extends State<TimetableModify> {
                       onTap: () {
                         ttData = x.data();
                         ttData["new"] = false;
+                        // ttData["timing"] = [];
                         nameController =
                             TextEditingController(text: ttData["name"]);
                         switchPages(1);
@@ -197,14 +206,63 @@ class _TimetableModifyState extends State<TimetableModify> {
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(18.0),
-              child: global.classicTextField(
-                "Schedule Name",
-                "(e.g., Special class, Generic class)",
-                nameController,
-                const Icon(
-                  Icons.event_note,
-                  color: Colors.blue,
-                ),
+              child: Row(
+                children: [
+                  Flexible(
+                    child: global.classicTextField(
+                      "Schedule",
+                      "Class Name",
+                      nameController,
+                      const Icon(
+                        Icons.event_note,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 30),
+                  Flexible(
+                    child: ListTile(
+                      leading: const Icon(Icons.access_time),
+                      subtitle: global.textWidget("Starting time"),
+                      title: InkWell(
+                        onTap: () async {
+                          final DateTime curr =
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  ttData["startingTime"] ??
+                                      DateTime(2000, 1, 1, 8)
+                                          .millisecondsSinceEpoch);
+                          final TimeOfDay? picked = await showTimePicker(
+                            context: context,
+                            initialTime: TimeOfDay.fromDateTime(curr),
+                            helpText: "Set initial timing of this schedule",
+                          );
+
+                          if (picked != null) {
+                            if (!(picked.hour > 6 && picked.hour < 12 + 9)) {
+                              global.snackbarText(
+                                  "Please select timing within 7 am to 8 pm");
+                              return;
+                            }
+                            setState(() {
+                              ttData["startingTime"] =
+                                  DateTime(2000, 1, 1, picked.hour)
+                                      .millisecondsSinceEpoch;
+                            });
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: global.textWidgetWithHeavyFont(
+                            formatTime(DateTime.fromMillisecondsSinceEpoch(
+                                ttData["startingTime"] ??
+                                    DateTime(2000, 1, 1, 8)
+                                        .millisecondsSinceEpoch)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -246,10 +304,7 @@ class _TimetableModifyState extends State<TimetableModify> {
                                           height: 40,
                                           width: 90,
                                           child: global.classicTextField(
-                                              "Event Name",
-                                              "e.g Lunch",
-                                              x[0],
-                                              null),
+                                              "Name", "e.g Lunch", x[0], null),
                                         ),
                                         SizedBox(
                                           width: 40,
@@ -390,49 +445,45 @@ class _TimetableModifyState extends State<TimetableModify> {
             // Time table UI
 
             Flexible(
-              child: TimetableConfig<BasicEvent>(
-                key: Key(DateTime.now().toIso8601String()),
-
-                timeController: TimeController(
-                    initialRange: TimeRange(
-                        const Duration(hours: 7), const Duration(hours: 20))),
-                dateController: DateController(
-                    visibleRange:
-                        VisibleDateRange.fixed(DateTimeTimetable.today(), 1)),
-                eventBuilder: (context, event) => BasicEventWidget(event),
-                timeOverlayProvider: (context, date) => <TimeOverlay>[
-                  TimeOverlay(
-                    start: const Duration(hours: 0),
-                    end: const Duration(hours: 7),
-                    widget: const ColoredBox(color: Colors.black12),
-                    position: TimeOverlayPosition
-                        .behindEvents, // the default, alternatively `inFrontOfEvents`
-                  ),
-                  TimeOverlay(
-                    start: const Duration(hours: 20),
-                    end: const Duration(hours: 24),
-                    widget: const ColoredBox(color: Colors.black12),
-                  ),
-                ],
-                // Optional:
-                // eventProvider: (date) => someListOfEvents,
-                allDayEventBuilder: (context, event, info) =>
-                    BasicAllDayEventWidget(event, info: info),
-                // allDayOverflowBuilder: (date, overflowedEvents) => /* … */,
-                callbacks: TimetableCallbacks(
-                  onDateTimeBackgroundTap: (dateTime) {
-                    debugPrint(dateTime.toString());
+              child: DragTarget(
+                  onAccept: (data) {
+                    debugPrint("Added the given value!");
                   },
-                  // onWeekTap, onDateTap, onDateBackgroundTap, onDateTimeBackgroundTap, and
-                  // onMultiDateHeaderOverflowTap
-                ),
-                theme: TimetableThemeData(
-                  context,
-                  // startOfWeek: DateTime.monday,
-                  // See the "Theming" section below for more options.
-                ),
-                child: RecurringMultiDateTimetable<BasicEvent>(),
-              ),
+                  onWillAccept: (data) {
+                    debugPrint(ttData.toString());
+                    debugPrint("Entered");
+
+                    int i = 0;
+                    for (var x in ttData["events"]) {
+                      if (x["name"] == data.toString()) {
+                        break;
+                      }
+                      i += 1;
+                    }
+
+                    debugPrint("$i | ${ttData["events"].length}");
+
+                    // In case such entity doesn't exist within given events
+                    if (i == (ttData["events"] as List).length) {
+                      _accepted = false;
+                      return false;
+                    }
+                    ttData["timing"].add(i);
+                    _accepted = true;
+                    return true;
+                  },
+                  onLeave: (data) {
+                    if (!_accepted) {
+                      return;
+                    }
+                    ttData["timing"].remove(
+                        (ttData["events"] as List<dynamic>).indexOf(data));
+                    debugPrint("Left");
+                  },
+                  builder: ((context, candidateData, rejectedData) =>
+                      context.mounted
+                          ? timetablePanel(candidateData, rejectedData)
+                          : const SizedBox())),
             )
           ],
         ),
@@ -440,8 +491,174 @@ class _TimetableModifyState extends State<TimetableModify> {
     );
   }
 
+  bool _accepted = false;
+
+  List<BasicEvent> _events = [];
+  Widget timetablePanel(c, r) {
+    Duration startingHour = DateTime.fromMillisecondsSinceEpoch(
+            ttData["startingTime"] ??
+                DateTime(2000, 1, 1, 8).millisecondsSinceEpoch)
+        .timeOfDay;
+    DateTime curr = DateTimeTimetable.today();
+
+    // Build the list of schedules overlays
+    List<TimeOverlay> plans = [];
+    var durations = startingHour;
+    if (ttData["timing"] == "") {
+      ttData["timing"] = [];
+    }
+    int i = 0;
+    _events = []; // Resets the event to null so that it doesn't duplicate
+    for (int index in ttData["timing"] ?? []) {
+      var sched = ttData["events"]?[index]; // LIKELY THIS WHERE BUG COULD OCCUR
+      if (sched == null) {
+        continue;
+      }
+      i += 1;
+      int t = int.tryParse(sched["duration"].toString()) ?? 0;
+      Duration dur = Duration(hours: t ~/ 60, minutes: t % 60);
+      _events.add(_DemoEvent(i - 1, index, durations, durations + dur));
+      plans.add(
+        TimeOverlay(
+          start: durations,
+          end: durations + dur,
+          widget: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomRight: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.lightBlueAccent.withOpacity(0.4),
+                      Colors.lightBlue
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    sched["name"].toString(),
+                    softWrap: true,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      durations += dur;
+    }
+
+    bool isHovering = c.toString() != "[]";
+    debugPrint("Is hovering on panel? $isHovering");
+    return TimetableConfig<BasicEvent>(
+      key: Key(DateTime.now().toIso8601String()),
+
+      timeController: TimeController(
+          initialRange:
+              TimeRange(const Duration(hours: 7), const Duration(hours: 20))),
+      dateController:
+          DateController(visibleRange: VisibleDateRange.fixed(curr, 1)),
+      eventBuilder: (context, event) {
+        debugPrint("Event builder is called!");
+        if (context.mounted == false) {
+          return const SizedBox();
+        }
+        return _buildPartDayEvent(event, context);
+      },
+      eventProvider: eventProviderFromFixedList(_events),
+      timeOverlayProvider: (context, date) => <TimeOverlay>[
+        TimeOverlay(
+          start: const Duration(hours: 0),
+          end: const Duration(hours: 7),
+          widget: const ColoredBox(color: Colors.black12),
+          position: TimeOverlayPosition.inFrontOfEvents,
+        ),
+        for (var x in plans) x,
+        TimeOverlay(
+          start: const Duration(hours: 20),
+          end: const Duration(hours: 24),
+          widget: const ColoredBox(color: Colors.black12),
+        ),
+      ],
+      // Optional:
+      // eventProvider: (date) => someListOfEvents,
+      allDayEventBuilder: (context, event, info) =>
+          BasicAllDayEventWidget(event, info: info),
+      // allDayOverflowBuilder: (date, overflowedEvents) => /* … */,
+      callbacks: TimetableCallbacks(
+        onDateTimeBackgroundTap: (dateTime) {
+          debugPrint(_draggedEvents.toString());
+          debugPrint(dateTime.toString());
+        },
+        // onWeekTap, onDateTap, onDateBackgroundTap, onDateTimeBackgroundTap, and
+        // onMultiDateHeaderOverflowTap
+      ),
+      theme: TimetableThemeData(
+        context,
+        // startOfWeek: DateTime.monday,
+        // See the "Theming" section below for more options.
+      ),
+      child: RecurringMultiDateTimetable<BasicEvent>(),
+    );
+  }
+
+  Widget _buildPartDayEvent(BasicEvent event, BuildContext buildContext) {
+    var showSnackBar = global.snackbarText;
+    const roundedTo = Duration(minutes: 10);
+
+    return PartDayDraggableEvent(
+      onDragStart: () {
+        if (buildContext.mounted) {
+          setState(() => _draggedEvents.add(event));
+        }
+      },
+      onDragUpdate: (dateTime) {
+        if (buildContext.mounted) {
+          setState(() {
+            debugPrint(dateTime.toString());
+            dateTime = dateTime.roundTimeToMultipleOf(roundedTo);
+            final index = _draggedEvents.indexWhere((it) => it.id == event.id);
+            final oldEvent = _draggedEvents[index];
+            _draggedEvents[index] = oldEvent.copyWith(
+              start: dateTime,
+              end: dateTime.add(oldEvent.duration),
+            );
+          });
+        }
+      },
+      onDragEnd: (dateTime) {
+        if (buildContext.mounted) {
+          dateTime = (dateTime ?? event.start).roundTimeToMultipleOf(roundedTo);
+
+          setState(() => _draggedEvents.removeWhere((it) => it.id == event.id));
+          showSnackBar('Dragged event to $dateTime.');
+        }
+      },
+      onDragCanceled: (isMoved) => debugPrint('Your finger moved: $isMoved'),
+      child: BasicEventWidget(
+        event,
+        onTap: () => showSnackBar('Part-day event $event tapped'),
+      ),
+    );
+  }
+
   @override
   void initState() {
+    global.uiSecondaryScrollPhysics = const NeverScrollableScrollPhysics();
     super.initState();
     Future.delayed(Duration.zero, () async {
       timetableData = (await global.Database!.firestore
@@ -450,6 +667,11 @@ class _TimetableModifyState extends State<TimetableModify> {
           .docs;
       setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    debugPrint("hi");
   }
 
   @override
@@ -498,6 +720,22 @@ class _TimetableModifyState extends State<TimetableModify> {
   }
 }
 
+class _DemoEvent extends BasicEvent {
+  _DemoEvent(
+    int demoId,
+    int eventId,
+    Duration start,
+    Duration end, {
+    int endDateOffset = 0,
+  }) : super(
+          id: '$demoId-$eventId',
+          title: "",
+          backgroundColor: Colors.transparent,
+          start: DateTimeTimetable.today().add(start),
+          end: DateTimeTimetable.today().add(end),
+        );
+}
+
 class DraggableWidget extends StatelessWidget {
   final String label;
   Color color =
@@ -505,8 +743,8 @@ class DraggableWidget extends StatelessWidget {
 
   DraggableWidget({
     required this.label,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

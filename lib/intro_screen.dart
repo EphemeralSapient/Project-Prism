@@ -1,32 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_meedu_videoplayer/meedu_player.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart'; // Provides [VideoController] & [Video]
 
 class IntroPage extends StatefulWidget {
-  IntroPage({Key? key}) : super(key: key);
+  const IntroPage({super.key});
 
   @override
   _IntroPageState createState() => _IntroPageState();
 }
 
 class _IntroPageState extends State<IntroPage> {
-  final _meeduPlayerController = MeeduPlayerController(
-      controlsStyle: ControlsStyle.primary,
-      controlsEnabled: false,
-      colorTheme: Colors.transparent);
+  // controlsStyle: ControlsStyle.primary,
+  // controlsEnabled: false,
+  // colorTheme: Colors.transparent);
+  late final player = Player();
+  late final _controller = VideoController(player,
+      configuration: const VideoControllerConfiguration());
   bool _visible = true;
 
   @override
   void initState() {
+    debugPrint("Intro is being played");
+
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _meeduPlayerController.setDataSource(
-        DataSource(
-          type: DataSourceType.asset,
-          source: "asset/video/intro_anim.mp4",
-        ),
-        autoplay: true,
-      );
-      Future.delayed(const Duration(seconds: 7, milliseconds: 0), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await player.open(Media(
+          "https://cdn.discordapp.com/attachments/304905418306486284/1188707171668598865/intro_anim.mp4?ex=659b80d2&is=65890bd2&hm=c33cd8ec37aa3fd0c5a9c8779d48f207544264eafe6487eb8d3813c8bb81204d&"));
+
+      Future.delayed(const Duration(seconds: 7, milliseconds: 400), () {
+        debugPrint("Yes!");
         _visible = false;
         setState(() {});
       });
@@ -35,7 +37,7 @@ class _IntroPageState extends State<IntroPage> {
 
   @override
   void dispose() {
-    _meeduPlayerController.dispose(); // release the video player
+    player.dispose(); // release the video player
     super.dispose();
   }
 
@@ -46,8 +48,8 @@ class _IntroPageState extends State<IntroPage> {
         child: AnimatedOpacity(
           opacity: _visible ? 1.0 : 0.0,
           duration: const Duration(milliseconds: 1000),
-          child: MeeduVideoPlayer(
-            controller: _meeduPlayerController,
+          child: Video(
+            controller: _controller,
           ),
         ),
       ),
@@ -62,9 +64,11 @@ class _IntroPageState extends State<IntroPage> {
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 800),
-              color: _visible ? Color.fromRGBO(233, 238, 230, 1) : Colors.white,
+              color: _visible
+                  ? const Color.fromRGBO(233, 238, 230, 1)
+                  : Colors.white,
             ),
-            _getVideoBackground(),
+            IgnorePointer(child: _getVideoBackground())
           ],
         ),
       ),
@@ -123,7 +127,6 @@ class _IntroPageState extends State<IntroPage> {
 //       ),
 //     );
 //   }
-
 
 //   @override
 //   Widget build(BuildContext context) {

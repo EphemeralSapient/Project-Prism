@@ -73,9 +73,11 @@ class _searchState extends State<search> {
 
     accounts = List.from(accounts);
     searchSorted = accounts;
-    setState(() {
-      started = true;
-    });
+    if (context.mounted) {
+      setState(() {
+        started = true;
+      });
+    }
     initialRefresh = true;
     debugPrint("Done refreshing /acc list for search route.");
     return 1;

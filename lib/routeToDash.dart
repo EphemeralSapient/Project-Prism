@@ -69,6 +69,7 @@ class _uiState extends State<ui> {
             bg(context),
             TransformerPageView(
                 scrollDirection: Axis.vertical,
+                loop: false,
                 physics: global.uiSecondaryScrollPhysics,
                 duration: const Duration(milliseconds: 500),
                 controller: _page,
@@ -87,7 +88,7 @@ class _uiState extends State<ui> {
 }
 
 class dashboard extends StatefulWidget {
-  const dashboard({Key? key}) : super(key: key);
+  const dashboard({super.key});
 
   @override
   State<dashboard> createState() => _dashboardState();
@@ -200,15 +201,19 @@ class _dashboardState extends State<dashboard> {
           ? Scaffold(
               backgroundColor: Theme.of(context).colorScheme.background,
               body: Center(
-                  child: SizedBox(
-                      width: MediaQuery.of(context).size.width / 2.5,
-                      child: DropShadow(
-                          offset: const Offset(0, 0),
-                          blurRadius: 10,
-                          spread: .5,
-                          child: Image.asset(
-                            "asset/images/logo-without-bg.png",
-                          )))))
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  child: DropShadow(
+                    offset: const Offset(0, 0),
+                    blurRadius: 10,
+                    spread: .5,
+                    child: Image.asset(
+                      "asset/images/logo-without-bg.png",
+                    ),
+                  ),
+                ),
+              ),
+            )
           : Scaffold(
               extendBody: true,
               extendBodyBehindAppBar: true,

@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:Project_Prism/global.dart' as global;
+import 'package:flutter/material.dart';
 
 class eventsUi extends StatelessWidget {
+  const eventsUi({super.key});
+
   @override
   Widget build(context) {
     List<Widget> childrens = [];
@@ -34,10 +34,10 @@ class eventsUi extends StatelessWidget {
                 debugPrint("Routing to Events page");
               },
               style: ElevatedButton.styleFrom(
+                  foregroundColor: Theme.of(context).focusColor,
                   shadowColor: Colors.transparent,
-                  primary: Colors.transparent,
-                  surfaceTintColor: Colors.transparent,
-                  onPrimary: Theme.of(context).focusColor),
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent),
               child: Row(children: [
                 Text(
                   "ANNOUNCEMENT ",
@@ -53,7 +53,7 @@ class eventsUi extends StatelessWidget {
                     color: Theme.of(context).textSelectionTheme.cursorColor,
                     size: 12)
               ])),
-          SizedBox(
+          const SizedBox(
             height: 5,
           ),
           Container(
@@ -65,7 +65,7 @@ class eventsUi extends StatelessWidget {
               scrollDirection: Axis.horizontal,
               //padding: EdgeInsets.all(10),
               child: Padding(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Row(
                   children: childrens,
                 ),

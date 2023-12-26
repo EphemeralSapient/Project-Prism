@@ -34,12 +34,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   firebase_core: ^2.14.0
-  firebase_core_platform_interface: ^4.8.0 # note removed ^
+  firebase_core_platform_interface: ^5.0.0 # note removed ^
   firebase_messaging: ^14.6.2 # previously I only had this which was pulling in 4.5.2 which you do not want
   firebase_auth: ^4.6.2
   drop_shadow: ^0.1.0
-  google_fonts: ^5.1.0
-  flutter_login: ^4.0.0
+  google_fonts: ^6.1.0
+  flutter_login: ^5.0.0
   font_awesome_flutter: ^10.1.0
   google_sign_in: ^6.1.4
   curved_navigation_bar: ^1.0.3
@@ -50,7 +50,7 @@ dependencies:
   timelines: ^0.1.0
   shared_preferences: ^2.1.2
   firebase_storage: ^11.2.2
-  ota_update: ^5.1.0
+  ota_update: ^6.0.0
   date_field: ^3.0.1
   another_transformer_page_view: ^2.0.0
   flutter_spinkit: ^5.1.0
@@ -63,13 +63,15 @@ dependencies:
   clickable_list_wheel_view: ^0.2.0
   animations: ^2.0.7
   flutter_face_pile: ^0.0.3
-  flutter_meedu_videoplayer: ^4.2.13
   flutter_html: ^3.0.0-beta.2
   camera: ^0.10.5+3
-  google_mlkit_face_detection: ^0.8.0
+  google_mlkit_face_detection: ^0.9.0
   http: ^1.1.0
   flutter_image_compress: ^2.0.4
   timetable: ^1.0.0-alpha.8
+  media_kit: ^1.1.10+1
+  media_kit_video: ^1.2.4
+  media_kit_libs_video: ^1.0.4
 
 dev_dependencies:
   flutter_test:
@@ -82,7 +84,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

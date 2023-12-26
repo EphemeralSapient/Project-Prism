@@ -1,7 +1,7 @@
 import 'dart:async' show Future;
 import 'dart:ui';
 
-import 'package:Project_Prism/intro_screen.dart';
+import 'package:Project_Prism/intro_screen.dart' show IntroPage;
 import 'package:Project_Prism/restartWidget.dart';
 import 'package:Project_Prism/routeToDash.dart';
 import 'package:drop_shadow/drop_shadow.dart' show DropShadow;
@@ -11,10 +11,10 @@ import 'package:firebase_core/firebase_core.dart' show Firebase;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_meedu_videoplayer/meedu_player.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:shared_preferences/shared_preferences.dart'
     show SharedPreferences;
 import 'package:timetable/timetable.dart';
@@ -50,7 +50,7 @@ Future main() async {
     }
   };
   debugPrint("initializing required modules...");
-  await initMeeduPlayer();
+  MediaKit.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
   pref = await SharedPreferences.getInstance();
   introRan = pref!.getInt("introPlayed") ?? 0;
@@ -106,7 +106,7 @@ Future main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -192,7 +192,7 @@ class _MyAppState extends State<MyApp> {
       themeMode: globals.darkMode,
       initialRoute: '/',
       routes: {
-        '/': (context) => introRan == 0 ? IntroPage() : const home(),
+        '/': (context) => introRan == 0 ? const IntroPage() : const home(),
 //      '/choice': (context) => const Choice()
       },
       onGenerateRoute: (settings) {
@@ -230,7 +230,7 @@ class _MyAppState extends State<MyApp> {
 
 // ignore: camel_case_types
 class home extends StatefulWidget {
-  const home({Key? key}) : super(key: key);
+  const home({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -369,16 +369,20 @@ class HomeImpl extends State<home> {
   Widget build(BuildContext context) {
     globals.rootCTX = context;
     return Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.background,
-        body: Center(
-            child: SizedBox(
-                width: MediaQuery.of(context).size.width / 2.5,
-                child: DropShadow(
-                    offset: const Offset(0, 0),
-                    blurRadius: 10,
-                    spread: .5,
-                    child: Image.asset(
-                      "asset/images/logo-without-bg.png",
-                    )))));
+      backgroundColor: Theme.of(context).colorScheme.background,
+      body: Center(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width / 2.5,
+          child: DropShadow(
+            offset: const Offset(0, 0),
+            blurRadius: 10,
+            spread: .5,
+            child: Image.asset(
+              "asset/images/logo-without-bg.png",
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

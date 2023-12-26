@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:marquee/marquee.dart' show Marquee;
 import 'package:Project_Prism/global.dart' as global;
+import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:marquee/marquee.dart' show Marquee;
 import 'package:timelines/timelines.dart';
 
 bool currentIsList1 = true;
@@ -209,6 +209,8 @@ Future<void> fnInit() async {
 }
 
 class timetable_short extends StatefulWidget {
+  const timetable_short({super.key});
+
   @override
   State<timetable_short> createState() => _timetable_shortState();
 }
@@ -217,7 +219,7 @@ Widget createTTSWidget(int index) {
   final context = global.rootCTX!;
   return ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Theme.of(context).focusColor,
+          backgroundColor: Theme.of(context).focusColor,
           shadowColor: Colors.transparent,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
@@ -234,7 +236,7 @@ Widget createTTSWidget(int index) {
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10, top: 5),
         child: SizedBox.fromSize(
-          size: Size(double.infinity, 70),
+          size: const Size(double.infinity, 70),
           child: Stack(
             children: [
               Text("Current on-going class : ",
@@ -256,7 +258,7 @@ Widget createTTSWidget(int index) {
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           fontFamily: "Raleway"),
-                      pauseAfterRound: Duration(seconds: 8),
+                      pauseAfterRound: const Duration(seconds: 8),
                       crossAxisAlignment: CrossAxisAlignment.start)),
               Align(
                   alignment: Alignment.bottomLeft,
@@ -296,6 +298,7 @@ class _timetable_shortState extends State<timetable_short> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     setStateTTS = setState;
     l1 = createTTSWidget(0);
@@ -331,7 +334,7 @@ class _timetable_shortState extends State<timetable_short> {
 
 void timetable_expand() {
   bool test = false;
-  var dlc = DashedLineConnector(
+  var dlc = const DashedLineConnector(
     thickness: 1,
     gap: 10,
     space: 35,
@@ -370,7 +373,7 @@ void timetable_expand() {
               },
               blendMode: BlendMode.dstOut,
               child: ListWheelScrollView(
-                  physics: BouncingScrollPhysics(),
+                  physics: const BouncingScrollPhysics(),
                   controller: sc,
                   perspective: 0.0025,
                   squeeze: 1.04,
@@ -389,7 +392,7 @@ void timetable_expand() {
                             ),
                             node: TimelineNode(
                               position: 0.25,
-                              indicator: OutlinedDotIndicator(
+                              indicator: const OutlinedDotIndicator(
                                 borderWidth: 1,
                               ),
                               startConnector: null,
@@ -407,7 +410,7 @@ void timetable_expand() {
                             ),
                             node: TimelineNode(
                               position: 0.25,
-                              indicator: OutlinedDotIndicator(
+                              indicator: const OutlinedDotIndicator(
                                 borderWidth: 1,
                               ),
                               startConnector: dlc,
@@ -424,7 +427,7 @@ void timetable_expand() {
                             ),
                             node: TimelineNode(
                               position: 0.25,
-                              indicator: OutlinedDotIndicator(
+                              indicator: const OutlinedDotIndicator(
                                 borderWidth: 1,
                               ),
                               startConnector: dlc,
@@ -442,7 +445,7 @@ void timetable_expand() {
                             ),
                             node: TimelineNode(
                               position: 0.25,
-                              indicator: OutlinedDotIndicator(
+                              indicator: const OutlinedDotIndicator(
                                 borderWidth: 1,
                               ),
                               endConnector: null,

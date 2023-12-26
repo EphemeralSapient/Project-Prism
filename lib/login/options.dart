@@ -1,12 +1,13 @@
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
 import 'package:Project_Prism/global.dart' as global;
+import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
 import 'loginRoute.dart' show route;
 
 class Choice extends StatefulWidget {
-  const Choice({Key? key}) : super(key: key);
+  const Choice({super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -43,7 +44,7 @@ class ChoiceImpl extends State<Choice> {
             route(i);
           },
           style: ElevatedButton.styleFrom(
-            primary: Colors.transparent,
+            backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
