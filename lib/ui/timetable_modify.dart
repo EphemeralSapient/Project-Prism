@@ -61,7 +61,7 @@ class _TimetableModifyState extends State<TimetableModify> {
         onPressed: () async {
           ttData = {
             "name": " ",
-            "timings": [],
+            "timing": [],
             "breaks": 0,
             "periods": 0,
           };
