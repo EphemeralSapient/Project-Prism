@@ -1,2 +1,0 @@
-*.apk filter=lfs diff=lfs merge=lfs -text
-install/android/app-debug.apk filter=lfs diff=lfs merge=lfs -text
