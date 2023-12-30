@@ -226,6 +226,7 @@ Widget classicTextField(
     controller: controller,
     keyboardType: keyboardType,
     style: TextStyle(
+        overflow: TextOverflow.fade,
         fontSize: 16.0,
         color: Theme.of(rootCTX!).textSelectionTheme.cursorColor),
     decoration: InputDecoration(
@@ -240,6 +241,7 @@ Widget classicTextField(
         borderSide: const BorderSide(color: Colors.blue, width: 1.0),
       ),
       labelStyle: const TextStyle(
+        overflow: TextOverflow.fade,
         color: Colors.blue,
       ),
       hintStyle: TextStyle(

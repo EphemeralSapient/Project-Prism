@@ -6,6 +6,26 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:timetable/timetable.dart';
 
+Map<String, dynamic> ttData = {
+  // TimeTable data
+  "name": "",
+  "timings": [],
+  "breaks": 0,
+  "periods": 0,
+}; // Loaded and updated, meant for 2nd page usage.
+List<dynamic> periods =
+    []; // Period refers to schedule data such as name, index, timing
+dynamic c; // Null if period is not being dragging on TT panel
+dynamic panelSetState = () {};
+bool isDragging = false;
+final TimeController tc = TimeController(
+    initialRange:
+        TimeRange(const Duration(hours: 7), const Duration(hours: 20)));
+final DateController dc = DateController(
+    visibleRange: VisibleDateRange.fixed(DateTimeTimetable.today(), 1));
+final List<BasicEvent> _events = [];
+final _draggedEvents = <BasicEvent>[];
+
 class TimetableModify extends StatefulWidget {
   const TimetableModify({super.key});
 
@@ -15,13 +35,6 @@ class TimetableModify extends StatefulWidget {
 
 class _TimetableModifyState extends State<TimetableModify> {
   final PageController _pg = PageController();
-
-  Map<String, dynamic> ttData = {
-    "name": "",
-    "timings": [],
-    "breaks": 0,
-    "periods": 0,
-  }; // Loaded and updated, meant for 2nd page usage.
 
   dynamic timetableData; // Obtained data from database
   var nameController = TextEditingController();
@@ -168,8 +181,6 @@ class _TimetableModifyState extends State<TimetableModify> {
     );
   }
 
-  final _draggedEvents = <BasicEvent>[];
-
   Widget page2(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -243,7 +254,7 @@ class _TimetableModifyState extends State<TimetableModify> {
                                   "Please select timing within 7 am to 8 pm");
                               return;
                             }
-                            setState(() {
+                            panelSetState(() {
                               ttData["startingTime"] =
                                   DateTime(2000, 1, 1, picked.hour)
                                       .millisecondsSinceEpoch;
@@ -270,173 +281,198 @@ class _TimetableModifyState extends State<TimetableModify> {
               height: 50,
               width: double.infinity,
               child: Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          // Controllers
-                          Map<String, dynamic> controls = {};
+                padding: const EdgeInsets.only(left: 18.0, right: 18.0),
+                child: ShaderMask(
+                  shaderCallback: (Rect rect) {
+                    return const LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        Colors.black,
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black,
+                      ],
+                      stops: [0.0, 0.1, 0.9, 1.0],
+                    ).createShader(Offset.zero & rect.size);
+                  },
+                  blendMode: BlendMode.dstOut,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(width: 30),
+                        InkWell(
+                          onTap: () {
+                            // Controllers
+                            Map<String, dynamic> controls = {};
 
-                          for (var x in ttData["events"] ?? []) {
-                            controls[x["name"]] = [
-                              TextEditingController(text: x["name"]),
-                              x["type"],
-                              TextEditingController(text: x["duration"]),
-                            ];
-                          }
+                            for (var x in ttData["events"] ?? []) {
+                              controls[x["name"]] = [
+                                TextEditingController(text: x["name"]),
+                                x["type"],
+                                TextEditingController(text: x["duration"]),
+                              ];
+                            }
 
-                          global.alert.quickAlert(context, const Text("wut"),
-                              bodyFn: () {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                for (var x in controls.values ?? [])
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        SizedBox(
-                                          height: 40,
-                                          width: 90,
-                                          child: global.classicTextField(
-                                              "Name", "e.g Lunch", x[0], null),
-                                        ),
-                                        SizedBox(
-                                          width: 40,
-                                          child: DropdownButton(
-                                            elevation: 0,
-                                            iconSize: 0,
-                                            items: [
-                                              for (var x in [
-                                                ["Break", "Break"],
-                                                ["Class", "Class"],
-                                                ["Others", "Others"],
-                                              ])
-                                                DropdownMenuItem(
-                                                  value: x[1],
-                                                  child: global
-                                                      .textWidget_ns(x[1]),
-                                                ),
-                                            ],
-                                            value: x[1],
-                                            dropdownColor: Theme.of(context)
-                                                .focusColor
-                                                .withOpacity(0.75),
-                                            onChanged: (value) {
-                                              x[1] = value.toString();
-                                              global.quickAlertGlobalVar(() {});
-                                            },
+                            global.alert.quickAlert(context, const Text("wut"),
+                                bodyFn: () {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (var x in controls.values ?? [])
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            height: 40,
+                                            width: 100,
+                                            child: global.classicTextField(
+                                                "Name",
+                                                "e.g Lunch",
+                                                x[0],
+                                                null),
                                           ),
-                                        ),
-                                        SizedBox(
-                                          height: 40,
-                                          width: 80,
-                                          child: global.classicTextField(
-                                              "Duration", "in mins", x[2], null,
-                                              keyboardType:
-                                                  TextInputType.phone),
-                                        ),
-                                        Expanded(
-                                          child: IconButton(
-                                              onPressed: () {
-                                                controls.remove(x[0].text);
-                                                debugPrint(
-                                                    controls.keys.toString());
+                                          SizedBox(
+                                            width: 40,
+                                            child: DropdownButton(
+                                              elevation: 0,
+                                              iconSize: 0,
+                                              items: [
+                                                for (var x in [
+                                                  ["Break", "Break"],
+                                                  ["Class", "Class"],
+                                                  ["Others", "Others"],
+                                                ])
+                                                  DropdownMenuItem(
+                                                    value: x[1],
+                                                    child: global
+                                                        .textWidget_ns(x[1]),
+                                                  ),
+                                              ],
+                                              value: x[1],
+                                              dropdownColor: Theme.of(context)
+                                                  .focusColor
+                                                  .withOpacity(0.75),
+                                              onChanged: (value) {
+                                                x[1] = value.toString();
                                                 global
                                                     .quickAlertGlobalVar(() {});
                                               },
-                                              icon: const Icon(
-                                                Icons.remove_circle,
-                                                color: Colors.redAccent,
-                                              )),
-                                        )
-                                      ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 40,
+                                            width: 80,
+                                            child: global.classicTextField(
+                                                "Duration",
+                                                "in mins",
+                                                x[2],
+                                                null,
+                                                keyboardType:
+                                                    TextInputType.phone),
+                                          ),
+                                          Expanded(
+                                            child: IconButton(
+                                                onPressed: () {
+                                                  controls.remove(x[0].text);
+                                                  debugPrint(
+                                                      controls.keys.toString());
+                                                  global.quickAlertGlobalVar(
+                                                      () {});
+                                                },
+                                                icon: const Icon(
+                                                  Icons.remove_circle,
+                                                  color: Colors.redAccent,
+                                                )),
+                                          )
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ElevatedButton.icon(
-                                  icon: const Icon(
-                                    Icons.create,
-                                    color: Colors.lightBlueAccent,
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Theme.of(context)
-                                          .focusColor
-                                          .withOpacity(0.9)),
-                                  onPressed: () {
-                                    String eventName =
-                                        "R${Random.secure().nextInt(1000)}";
-                                    controls[eventName] = [
-                                      TextEditingController(text: eventName),
-                                      "Class",
-                                      TextEditingController(text: "30")
-                                    ];
-                                    global.quickAlertGlobalVar(() {});
-                                  },
-                                  label: global.textWidgetWithHeavyFont(
-                                      "Create new event"),
-                                )
-                              ],
-                            );
-                          }, action: [
-                            FloatingActionButton(
-                              backgroundColor: Colors.redAccent,
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Icon(Icons.cancel),
-                            ),
-                            FloatingActionButton(
-                              backgroundColor: Colors.blueAccent,
-                              onPressed: () {
-                                ttData["events"] = [
-                                  for (var x in controls.values)
-                                    {
-                                      "name": x[0].text,
-                                      "type": x[1],
-                                      "duration": x[2].text
-                                    }
-                                ];
-                                setState(() {});
-                                Navigator.pop(context);
-                              },
-                              child: const Icon(Icons.done),
-                            )
-                          ]);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 8.0, right: 8.0),
-                                child: global.textWidget_ns("Drag n' Drop "),
+                                  ElevatedButton.icon(
+                                    icon: const Icon(
+                                      Icons.create,
+                                      color: Colors.lightBlueAccent,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context)
+                                            .focusColor
+                                            .withOpacity(0.9)),
+                                    onPressed: () {
+                                      String eventName =
+                                          "R${Random.secure().nextInt(1000)}";
+                                      controls[eventName] = [
+                                        TextEditingController(text: eventName),
+                                        "Class",
+                                        TextEditingController(text: "30")
+                                      ];
+                                      global.quickAlertGlobalVar(() {});
+                                    },
+                                    label: global.textWidgetWithHeavyFont(
+                                        "Create new event"),
+                                  )
+                                ],
+                              );
+                            }, action: [
+                              FloatingActionButton(
+                                backgroundColor: Colors.redAccent,
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Icon(Icons.cancel),
                               ),
-                              const Icon(Icons.edit,
-                                  size: 20, color: Colors.blue)
+                              FloatingActionButton(
+                                backgroundColor: Colors.blueAccent,
+                                onPressed: () {
+                                  ttData["events"] = [
+                                    for (var x in controls.values)
+                                      {
+                                        "name": x[0].text,
+                                        "type": x[1],
+                                        "duration": x[2].text
+                                      }
+                                  ];
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
+                                child: const Icon(Icons.done),
+                              )
+                            ]);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(1.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      left: 8.0, right: 8.0),
+                                  child: global.textWidget_ns("Drag n' Drop "),
+                                ),
+                                const Icon(Icons.edit,
+                                    size: 20, color: Colors.blue)
+                              ],
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              left: 8.0, right: 8, top: 5, bottom: 5),
+                          child: Wrap(
+                            spacing: 15,
+                            // mainAxisSize: MainAxisSize.max,
+                            children: [
+                              for (var names in ttData["events"] ?? [])
+                                DraggableWidget(label: names["name"]),
                             ],
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(
-                            left: 8.0, right: 8, top: 5, bottom: 5),
-                        child: Wrap(
-                          spacing: 10,
-                          // mainAxisSize: MainAxisSize.max,
-                          children: [
-                            for (var names in ttData["events"] ?? [])
-                              DraggableWidget(label: names["name"]),
-                          ],
-                        ),
-                      )
-                    ],
+                        const SizedBox(width: 30)
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -445,11 +481,32 @@ class _TimetableModifyState extends State<TimetableModify> {
             // Time table UI
 
             Flexible(
-              child: DragTarget(
-                  onAccept: (data) {
+              child: Stack(
+                children: [
+                  // const SizedBox.expand(child: TimetablePanel()),
+                  DragTarget(onAccept: (data) {
+                    int i = 0;
+                    for (var x in ttData["events"]) {
+                      if (x["name"] == data.toString()) {
+                        break;
+                      }
+                      i += 1;
+                    }
+
+                    debugPrint("$i | ${ttData["events"].length}");
+
+                    // In case such entity doesn't exist within given _events
+                    if (i == (ttData["events"] as List).length) {
+                      _accepted = false;
+                      return;
+                    }
+                    ttData["timing"].add(i);
+                    _accepted = true;
+                    panelSetState(() {});
                     debugPrint("Added the given value!");
-                  },
-                  onWillAccept: (data) {
+                    global.snackbarText(
+                        "Added ${data.toString()} to the timetable!");
+                  }, onWillAccept: (data) {
                     debugPrint(ttData.toString());
                     debugPrint("Entered");
 
@@ -463,27 +520,27 @@ class _TimetableModifyState extends State<TimetableModify> {
 
                     debugPrint("$i | ${ttData["events"].length}");
 
-                    // In case such entity doesn't exist within given events
+                    // In case such entity doesn't exist within given _events
                     if (i == (ttData["events"] as List).length) {
                       _accepted = false;
                       return false;
                     }
-                    ttData["timing"].add(i);
                     _accepted = true;
                     return true;
-                  },
-                  onLeave: (data) {
+                  }, onLeave: (data) {
                     if (!_accepted) {
                       return;
                     }
                     ttData["timing"].remove(
                         (ttData["events"] as List<dynamic>).indexOf(data));
                     debugPrint("Left");
-                  },
-                  builder: ((context, candidateData, rejectedData) =>
-                      context.mounted
-                          ? timetablePanel(candidateData, rejectedData)
-                          : const SizedBox())),
+                  }, builder: ((context, candidateData, rejectedData) {
+                    c = candidateData;
+                    debugPrint("building the builder");
+                    return const SizedBox.expand(child: TimetablePanel());
+                  })),
+                ],
+              ),
             )
           ],
         ),
@@ -493,172 +550,8 @@ class _TimetableModifyState extends State<TimetableModify> {
 
   bool _accepted = false;
 
-  List<BasicEvent> _events = [];
-  Widget timetablePanel(c, r) {
-    Duration startingHour = DateTime.fromMillisecondsSinceEpoch(
-            ttData["startingTime"] ??
-                DateTime(2000, 1, 1, 8).millisecondsSinceEpoch)
-        .timeOfDay;
-    DateTime curr = DateTimeTimetable.today();
-
-    // Build the list of schedules overlays
-    List<TimeOverlay> plans = [];
-    var durations = startingHour;
-    if (ttData["timing"] == "") {
-      ttData["timing"] = [];
-    }
-    int i = 0;
-    _events = []; // Resets the event to null so that it doesn't duplicate
-    for (int index in ttData["timing"] ?? []) {
-      var sched = ttData["events"]?[index]; // LIKELY THIS WHERE BUG COULD OCCUR
-      if (sched == null) {
-        continue;
-      }
-      i += 1;
-      int t = int.tryParse(sched["duration"].toString()) ?? 0;
-      Duration dur = Duration(hours: t ~/ 60, minutes: t % 60);
-      _events.add(_DemoEvent(i - 1, index, durations, durations + dur));
-      plans.add(
-        TimeOverlay(
-          start: durations,
-          end: durations + dur,
-          widget: Padding(
-            padding: const EdgeInsets.all(1.0),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.lightBlueAccent.withOpacity(0.4),
-                      Colors.lightBlue
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomRight: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    sched["name"].toString(),
-                    softWrap: true,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-      durations += dur;
-    }
-
-    bool isHovering = c.toString() != "[]";
-    debugPrint("Is hovering on panel? $isHovering");
-    return TimetableConfig<BasicEvent>(
-      key: Key(DateTime.now().toIso8601String()),
-
-      timeController: TimeController(
-          initialRange:
-              TimeRange(const Duration(hours: 7), const Duration(hours: 20))),
-      dateController:
-          DateController(visibleRange: VisibleDateRange.fixed(curr, 1)),
-      eventBuilder: (context, event) {
-        debugPrint("Event builder is called!");
-        if (context.mounted == false) {
-          return const SizedBox();
-        }
-        return _buildPartDayEvent(event, context);
-      },
-      eventProvider: eventProviderFromFixedList(_events),
-      timeOverlayProvider: (context, date) => <TimeOverlay>[
-        TimeOverlay(
-          start: const Duration(hours: 0),
-          end: const Duration(hours: 7),
-          widget: const ColoredBox(color: Colors.black12),
-          position: TimeOverlayPosition.inFrontOfEvents,
-        ),
-        for (var x in plans) x,
-        TimeOverlay(
-          start: const Duration(hours: 20),
-          end: const Duration(hours: 24),
-          widget: const ColoredBox(color: Colors.black12),
-        ),
-      ],
-      // Optional:
-      // eventProvider: (date) => someListOfEvents,
-      allDayEventBuilder: (context, event, info) =>
-          BasicAllDayEventWidget(event, info: info),
-      // allDayOverflowBuilder: (date, overflowedEvents) => /* … */,
-      callbacks: TimetableCallbacks(
-        onDateTimeBackgroundTap: (dateTime) {
-          debugPrint(_draggedEvents.toString());
-          debugPrint(dateTime.toString());
-        },
-        // onWeekTap, onDateTap, onDateBackgroundTap, onDateTimeBackgroundTap, and
-        // onMultiDateHeaderOverflowTap
-      ),
-      theme: TimetableThemeData(
-        context,
-        // startOfWeek: DateTime.monday,
-        // See the "Theming" section below for more options.
-      ),
-      child: RecurringMultiDateTimetable<BasicEvent>(),
-    );
-  }
-
-  Widget _buildPartDayEvent(BasicEvent event, BuildContext buildContext) {
-    var showSnackBar = global.snackbarText;
-    const roundedTo = Duration(minutes: 10);
-
-    return PartDayDraggableEvent(
-      onDragStart: () {
-        if (buildContext.mounted) {
-          setState(() => _draggedEvents.add(event));
-        }
-      },
-      onDragUpdate: (dateTime) {
-        if (buildContext.mounted) {
-          setState(() {
-            debugPrint(dateTime.toString());
-            dateTime = dateTime.roundTimeToMultipleOf(roundedTo);
-            final index = _draggedEvents.indexWhere((it) => it.id == event.id);
-            final oldEvent = _draggedEvents[index];
-            _draggedEvents[index] = oldEvent.copyWith(
-              start: dateTime,
-              end: dateTime.add(oldEvent.duration),
-            );
-          });
-        }
-      },
-      onDragEnd: (dateTime) {
-        if (buildContext.mounted) {
-          dateTime = (dateTime ?? event.start).roundTimeToMultipleOf(roundedTo);
-
-          setState(() => _draggedEvents.removeWhere((it) => it.id == event.id));
-          showSnackBar('Dragged event to $dateTime.');
-        }
-      },
-      onDragCanceled: (isMoved) => debugPrint('Your finger moved: $isMoved'),
-      child: BasicEventWidget(
-        event,
-        onTap: () => showSnackBar('Part-day event $event tapped'),
-      ),
-    );
-  }
-
   @override
   void initState() {
-    global.uiSecondaryScrollPhysics = const NeverScrollableScrollPhysics();
     super.initState();
     Future.delayed(Duration.zero, () async {
       timetableData = (await global.Database!.firestore
@@ -667,11 +560,6 @@ class _TimetableModifyState extends State<TimetableModify> {
           .docs;
       setState(() {});
     });
-  }
-
-  @override
-  void dispose() {
-    debugPrint("hi");
   }
 
   @override
@@ -736,6 +624,37 @@ class _DemoEvent extends BasicEvent {
         );
 }
 
+// class _DemoEvent extends BasicEvent {
+//   _DemoEvent(
+//     int demoId,
+//     int eventId,
+//     Duration start,
+//     Duration end, {
+//     int endDateOffset = 0,
+//   }) : super(
+//           id: '$demoId-$eventId',
+//           title: '$demoId-$eventId',
+//           backgroundColor: _getColor('$demoId-$eventId'),
+//           start: DateTimeTimetable.today() + demoId.days + start,
+//           end: DateTimeTimetable.today() + (demoId + endDateOffset).days + end,
+//         );
+
+//   _DemoEvent.allDay(int id, int startOffset, int length)
+//       : super(
+//           id: 'a-$id',
+//           title: 'a-$id',
+//           backgroundColor: _getColor('a-$id'),
+//           start: DateTimeTimetable.today() + startOffset.days,
+//           end: DateTimeTimetable.today() + (startOffset + length).days,
+//         );
+
+//   static Color _getColor(String id) {
+//     return Random(id.hashCode)
+//         .nextColorHsv(saturation: 0.6, value: 0.8, alpha: 1)
+//         .toColor();
+//   }
+// }
+
 class DraggableWidget extends StatelessWidget {
   final String label;
   Color color =
@@ -790,6 +709,284 @@ class DraggableWidget extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class TimetablePanel extends StatefulWidget {
+  const TimetablePanel({super.key});
+
+  @override
+  State<TimetablePanel> createState() => _TimetablePanelState();
+}
+
+class _TimetablePanelState extends State<TimetablePanel> {
+  @override
+  void dispose() {
+    debugPrint("Panel getting disposed!");
+    super.dispose();
+  }
+
+  Widget _buildPartDayEvent(BasicEvent event, BuildContext buildContext) {
+    var showSnackBar = global.snackbarText;
+    const roundedTo = Duration(minutes: 10);
+
+    return PartDayDraggableEvent(
+      onDragStart: () {
+        panelSetState(() => _draggedEvents.add(event));
+      },
+      onDragUpdate: (dateTime) {
+        panelSetState(() {
+          isDragging = true;
+          dateTime = dateTime.roundTimeToMultipleOf(roundedTo);
+          final index = _draggedEvents.indexWhere((it) => it.id == event.id);
+          final oldEvent = _draggedEvents[index];
+          _draggedEvents[index] = oldEvent.copyWith(
+            start: dateTime,
+            end: dateTime.add(oldEvent.duration),
+          );
+        });
+      },
+      onDragEnd: (dateTime) {
+        isDragging = false;
+        dateTime = (dateTime ?? event.start).roundTimeToMultipleOf(roundedTo);
+        var info = event.id
+            .toString()
+            .split("-"); // 0 => Position, 1 => Event position
+
+        debugPrint(ttData.toString());
+        panelSetState(
+            () => _draggedEvents.removeWhere((it) => it.id == event.id));
+
+        if (dateTime.hour < 7 || dateTime.hour > 12 + 7) {
+          // Delete it
+          (ttData["timing"] as List).removeAt(int.tryParse(info[0])!);
+          showSnackBar("Deleted");
+        } else {
+          // Move it to given order
+
+          int initalIndex = int.tryParse(info[0])!;
+          int movingIndex = 0;
+          Duration startingHour =
+              DateTime.fromMillisecondsSinceEpoch(ttData["startingTime"])
+                  .timeOfDay;
+
+          for (BasicEvent x in _events) {
+            if (startingHour > dateTime.timeOfDay) {
+              break;
+            } else {
+              movingIndex += 1;
+              debugPrint("no");
+            }
+            startingHour += x.duration;
+          }
+
+          debugPrint("Moving from $initalIndex to $movingIndex");
+
+          // Move intialIndex to movingIndex in ttData["timing"]
+          (ttData["timing"] as List).insert(movingIndex, int.tryParse(info[1]));
+          (ttData["timing"] as List)
+              .removeAt(initalIndex + (initalIndex > movingIndex ? 1 : 0));
+          showSnackBar(
+              "Moved ${initalIndex + 1} position => ${movingIndex + 1} position");
+        }
+        setState(() {});
+        //showSnackBar('Dragged event to $dateTime. ');
+      },
+      onDragCanceled: (isMoved) => debugPrint('Your finger moved: $isMoved'),
+      child: BasicEventWidget(
+        event,
+        onTap: () => showSnackBar('Part-day event $event tapped'),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    panelSetState = setState;
+    super.initState();
+    debugPrint("Time table panel has been init");
+    debugPrint(ttData.toString());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Duration startingHour = DateTime.fromMillisecondsSinceEpoch(
+            ttData["startingTime"] ??
+                DateTime(2000, 1, 1, 8).millisecondsSinceEpoch)
+        .timeOfDay;
+    // Build the list of schedules overlays
+    List<TimeOverlay> plans = [];
+    var durations = startingHour;
+    if (ttData["timing"] == "") {
+      ttData["timing"] = [];
+    }
+    int i = 0;
+
+    //_events.clear(); // Resets the event to null so that it doesn't duplicate
+    // However this causes issue, making time table undraggable [unmount]
+
+    List<BasicEvent> eventsCopy = [];
+    for (int index in ttData["timing"] ?? []) {
+      var sched = ttData["events"]?[index]; // LIKELY THIS WHERE BUG COULD OCCUR
+      if (sched == null) {
+        continue;
+      }
+      i += 1;
+      int t = int.tryParse(sched["duration"].toString()) ?? 0;
+      Duration dur = Duration(hours: t ~/ 60, minutes: t % 60);
+      eventsCopy.add(_DemoEvent(i - 1, index, durations, durations + dur));
+      plans.add(
+        TimeOverlay(
+          start: durations,
+          end: durations + dur,
+          widget: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomRight: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.lightBlueAccent.withOpacity(0.4),
+                      Colors.lightBlue
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    sched["name"].toString(),
+                    softWrap: true,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      durations += dur;
+    }
+
+    // Check if _events is same as _eventsCopy
+    bool same = _events.length == eventsCopy.length;
+
+    if (same) {
+      for (int i = 0; i < eventsCopy.length; i++) {
+        if (_events[i].id.toString() != eventsCopy[i].id.toString()) {
+          same = false;
+          debugPrint(
+              "$i-${_events[i].toString()} IS NOT SAME !!!!!! AS ${eventsCopy[i].toString()}");
+        }
+      }
+    } else {
+      debugPrint(">>>>> _events is not as same length as eventsCopy");
+    }
+    if (!same) {
+      _events.clear();
+      for (BasicEvent x in eventsCopy) {
+        _events.add(x);
+      }
+      debugPrint(">>> _events is not same, refreshing!");
+    }
+
+    overlays(context, date) => <TimeOverlay>[
+          TimeOverlay(
+            start: const Duration(hours: 0),
+            end: const Duration(hours: 7),
+            widget: const ColoredBox(color: Colors.black12),
+            position: TimeOverlayPosition.inFrontOfEvents,
+          ),
+          for (var x in plans) x,
+          TimeOverlay(
+            start: const Duration(hours: 20),
+            end: const Duration(hours: 24),
+            widget: const ColoredBox(color: Colors.black12),
+          ),
+        ];
+
+    bool isHovering = c.toString() != "[]";
+    debugPrint("Is hovering on panel? $isHovering");
+
+    return TimetableConfig<BasicEvent>(
+      //key: Key(DateTime.now().toIso8601String()),
+      timeController: tc,
+      dateController: dc,
+
+      eventBuilder: (context, event) => _buildPartDayEvent(event, context),
+      eventProvider: eventProviderFromFixedList(
+          _events), // THIS CAUSES THE UNMOUNT AND UNDRAGGABLE ISSUE WHEN CHANGED
+      timeOverlayProvider: mergeTimeOverlayProviders([
+        overlays,
+        (context, date) => _draggedEvents
+            .map(
+              (it) =>
+                  it.toTimeOverlay(
+                      date: date,
+                      widget: Padding(
+                        padding: const EdgeInsets.all(1.0),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            bottomRight: Radius.circular(20),
+                            topRight: Radius.circular(20),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.redAccent.withOpacity(0.4),
+                                  Colors.red
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: const BorderRadius.only(
+                                bottomRight: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Moving - ${ttData["events"][int.tryParse(it.id.toString().split("-")[1])]["name"]}",
+                                softWrap: true,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )) ??
+                  TimeOverlay(
+                      start: const Duration(),
+                      end: const Duration(),
+                      widget: const SizedBox()),
+            )
+            .toList()
+      ]),
+      callbacks: TimetableCallbacks(
+        onDateTimeBackgroundTap: (dateTime) {
+          debugPrint(_draggedEvents.toString());
+          debugPrint(dateTime.toString());
+        },
+        // onWeekTap, onDateTap, onDateBackgroundTap, onDateTimeBackgroundTap, and
+        // onMultiDateHeaderOverflowTap
+      ),
+
+      child: RecurringMultiDateTimetable<BasicEvent>(),
     );
   }
 }
